@@ -1,0 +1,8 @@
+E:\OE NIK MSc\SZPA\Feleves Beadando AUJZ9U\Feleves\Feleves\bin\Debug\Feleves.exe.config
+E:\OE NIK MSc\SZPA\Feleves Beadando AUJZ9U\Feleves\Feleves\bin\Debug\Feleves.exe
+E:\OE NIK MSc\SZPA\Feleves Beadando AUJZ9U\Feleves\Feleves\bin\Debug\Feleves.pdb
+E:\OE NIK MSc\SZPA\Feleves Beadando AUJZ9U\Feleves\Feleves\obj\Debug\Feleves.csproj.AssemblyReference.cache
+E:\OE NIK MSc\SZPA\Feleves Beadando AUJZ9U\Feleves\Feleves\obj\Debug\Feleves.csproj.SuggestedBindingRedirects.cache
+E:\OE NIK MSc\SZPA\Feleves Beadando AUJZ9U\Feleves\Feleves\obj\Debug\Feleves.csproj.CoreCompileInputs.cache
+E:\OE NIK MSc\SZPA\Feleves Beadando AUJZ9U\Feleves\Feleves\obj\Debug\Feleves.exe
+E:\OE NIK MSc\SZPA\Feleves Beadando AUJZ9U\Feleves\Feleves\obj\Debug\Feleves.pdb
