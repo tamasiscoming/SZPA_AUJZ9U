@@ -15,8 +15,7 @@ namespace Feleves
         static int imageWidth = 0;
         static int imageHeight = 0;
         static Bitmap newImage = null;
-        static int outputWidth = 20;
-
+        static string outputFile = null;
         // Typical width/height for ASCII characters
         private const double FontAspectRatio = 0.6;
 
@@ -31,17 +30,50 @@ namespace Feleves
         static void Main(string[] args)
         {
             Console.WriteLine("Please browse an image");
-            Thread.Sleep(2000);
+            Thread.Sleep(1000);
 
             newImage = FileBrowse();
 
-            
+            try
+            {
+                if (newImage.Size.Width < 1)
+                {
+                    Console.WriteLine("Usage:");
+                    Console.WriteLine("  AscArt filename output-width [diagLog]");
+                }
+                else
+                {
+                    string inputFile = args[0];
+                    int outputWidth = int.Parse(args[1]);
+
+                    FileInfo fi = new FileInfo(inputFile);
+                    if (!fi.Exists)
+                        throw new Exception(string.Format("File {0} not found", inputFile));
+                    outputFile = Path.Combine(fi.DirectoryName, Path.GetFileNameWithoutExtension(inputFile) + ".txt");
+
+                    newImage = new Bitmap(inputFile);
+
+                    if (outputWidth > newImage.Width)
+                        throw new Exception("Output width must be <= pixel width of image");
+
+                    // Generate the ASCII art
+                    GenerateAsciiArt(newImage, outputFile, outputWidth);
+
+                    string fullPath = Path.GetFullPath(outputFile);
+                    Console.WriteLine("GetFullPath('{0}') returns '{1}'",
+                        outputFile, fullPath);
+                }
+            }
+            catch (Exception xx)
+            {
+                Console.WriteLine(string.Format("Fatal exception: {0}", xx));
+            }
 
 
             Console.ReadLine();
         }
 
-        static void GenerateAsciiArt()
+        static void GenerateAsciiArt(Bitmap newImage, string outputFile, int outputWidth)
         {
             // pixelChunkWidth/pixelChunkHeight - size of a chunk of pixels that will
             // map to 1 character.  These are doubles to avoid progressive rounding
@@ -99,6 +131,7 @@ namespace Feleves
 
             // Dump output string to file
             File.WriteAllText(outputFile, sbOutput.ToString());
+            
         }
 
         static Bitmap FileBrowse()

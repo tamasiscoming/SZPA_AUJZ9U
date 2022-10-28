@@ -5,6 +5,8 @@ VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Feleves", "Feleves.csproj", "{70F35CA5-482C-400E-9584-1AF1D84DB6B4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAsciiArt", "..\TestAsciiArt\TestAsciiArt.csproj", "{DC786882-04FC-45CA-9FC1-0249A5A1590F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{70F35CA5-482C-400E-9584-1AF1D84DB6B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{70F35CA5-482C-400E-9584-1AF1D84DB6B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{70F35CA5-482C-400E-9584-1AF1D84DB6B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC786882-04FC-45CA-9FC1-0249A5A1590F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC786882-04FC-45CA-9FC1-0249A5A1590F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC786882-04FC-45CA-9FC1-0249A5A1590F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC786882-04FC-45CA-9FC1-0249A5A1590F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
