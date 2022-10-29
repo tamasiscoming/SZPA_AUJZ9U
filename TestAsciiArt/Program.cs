@@ -15,10 +15,8 @@ namespace TestAsciiArt
     internal class Program
     {
         static Bitmap newImage = null;
-        //static string asciiChars = "  .,:ilwW@@";
-
-        static string asciiChars = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
-        static Stopwatch stopwatch = new Stopwatch();
+        static string asciiChars = " .:-=+*#%@";
+        static Stopwatch sw = new Stopwatch();
 
         [STAThread]
         static void Main(string[] args)
@@ -29,12 +27,15 @@ namespace TestAsciiArt
             newImage = FileBrowse();
             MakeArt(newImage);
 
-            Console.ReadLine();
+            Console.WriteLine("Finished MakeArt()");
+            Thread.Sleep(1000);
+            Environment.Exit(0);
         }
 
         static void MakeArt(Bitmap newImage)
         {
-            var dividedBy = newImage.Width / 130;
+            sw.Start();
+            var dividedBy = newImage.Width / 100;
             var height = newImage.Height;
 
             newImage = new Bitmap(newImage, new Size(newImage.Width / dividedBy, newImage.Height / dividedBy));
@@ -61,6 +62,8 @@ namespace TestAsciiArt
             Console.WriteLine("-----------------------------------------------------------------------------------------------------------");
 
             File.WriteAllLines(path, lines);
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed);
         }
 
         static Bitmap FileBrowse()
