@@ -25,14 +25,24 @@ namespace TestAsciiArt
             Thread.Sleep(1000);
 
             newImage = FileBrowse();
-            MakeArt(newImage);
+            SeqMakeArt(newImage);
 
             Console.WriteLine("Finished MakeArt()");
             Thread.Sleep(1000);
             Environment.Exit(0);
         }
+        #region Parallel Approach
+        static void ParMakeArt(Bitmap newImage)
+        {
+            Parallel.For(0, newImage.Width, i =>
+            {
 
-        static void MakeArt(Bitmap newImage)
+            })
+        }
+        #endregion
+
+        #region Sequential Approach
+        static void SeqMakeArt(Bitmap newImage)
         {
             sw.Start();
             var dividedBy = newImage.Width / 100;
@@ -65,7 +75,9 @@ namespace TestAsciiArt
             sw.Stop();
             Console.WriteLine(sw.Elapsed);
         }
+        #endregion
 
+        #region Setup
         static Bitmap FileBrowse()
         {
             Bitmap originalImage = null;
@@ -80,5 +92,6 @@ namespace TestAsciiArt
 
             return originalImage;
         }
+        #endregion
     }
 }
