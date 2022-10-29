@@ -1,0 +1,8 @@
+E:\OE NIK MSc\SZPA\Feleves Beadando AUJZ9U\Feleves\SZPA\SZPA\bin\Debug\SZPA.exe.config
+E:\OE NIK MSc\SZPA\Feleves Beadando AUJZ9U\Feleves\SZPA\SZPA\bin\Debug\SZPA.exe
+E:\OE NIK MSc\SZPA\Feleves Beadando AUJZ9U\Feleves\SZPA\SZPA\bin\Debug\SZPA.pdb
+E:\OE NIK MSc\SZPA\Feleves Beadando AUJZ9U\Feleves\SZPA\SZPA\obj\Debug\SZPA.csproj.AssemblyReference.cache
+E:\OE NIK MSc\SZPA\Feleves Beadando AUJZ9U\Feleves\SZPA\SZPA\obj\Debug\SZPA.csproj.SuggestedBindingRedirects.cache
+E:\OE NIK MSc\SZPA\Feleves Beadando AUJZ9U\Feleves\SZPA\SZPA\obj\Debug\SZPA.csproj.CoreCompileInputs.cache
+E:\OE NIK MSc\SZPA\Feleves Beadando AUJZ9U\Feleves\SZPA\SZPA\obj\Debug\SZPA.exe
+E:\OE NIK MSc\SZPA\Feleves Beadando AUJZ9U\Feleves\SZPA\SZPA\obj\Debug\SZPA.pdb
