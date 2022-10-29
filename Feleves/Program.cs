@@ -1,30 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using System.Drawing;
+using System.Threading;
 using System.Windows.Forms;
+using System.Diagnostics;
+using System.IO;
+using System.Globalization;
 
 namespace Feleves
 {
     internal class Program
     {
-        static int imageWidth = 0;
-        static int imageHeight = 0;
         static Bitmap newImage = null;
-        static string outputFile = null;
-        // Typical width/height for ASCII characters
-        private const double FontAspectRatio = 0.6;
-
-        // Available character set, ordered by decreasing intensity (brightness)
-        private const string OutputCharSet = "@%#*+=-:. ";
-
-        // Alternate char set uses more chars, but looks less realistic
-        private const string OutputCharSetAlternate = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
-
+        static string asciiChars = " .:-=+*#%@";
+        static Stopwatch sw = new Stopwatch();
 
         [STAThread]
         static void Main(string[] args)
@@ -33,107 +25,50 @@ namespace Feleves
             Thread.Sleep(1000);
 
             newImage = FileBrowse();
+            SeqMakeArt(newImage);
 
-            try
-            {
-                if (newImage.Size.Width < 1)
-                {
-                    Console.WriteLine("Usage:");
-                    Console.WriteLine("  AscArt filename output-width [diagLog]");
-                }
-                else
-                {
-                    string inputFile = args[0];
-                    int outputWidth = int.Parse(args[1]);
-
-                    FileInfo fi = new FileInfo(inputFile);
-                    if (!fi.Exists)
-                        throw new Exception(string.Format("File {0} not found", inputFile));
-                    outputFile = Path.Combine(fi.DirectoryName, Path.GetFileNameWithoutExtension(inputFile) + ".txt");
-
-                    newImage = new Bitmap(inputFile);
-
-                    if (outputWidth > newImage.Width)
-                        throw new Exception("Output width must be <= pixel width of image");
-
-                    // Generate the ASCII art
-                    GenerateAsciiArt(newImage, outputFile, outputWidth);
-
-                    string fullPath = Path.GetFullPath(outputFile);
-                    Console.WriteLine("GetFullPath('{0}') returns '{1}'",
-                        outputFile, fullPath);
-                }
-            }
-            catch (Exception xx)
-            {
-                Console.WriteLine(string.Format("Fatal exception: {0}", xx));
-            }
-
-
-            Console.ReadLine();
+            Console.WriteLine("Finished MakeArt()");
+            Thread.Sleep(1000);
+            Environment.Exit(0);
         }
-
-        static void GenerateAsciiArt(Bitmap newImage, string outputFile, int outputWidth)
+        #region Sequentional Approach
+        static void SeqMakeArt(Bitmap newImage)
         {
-            // pixelChunkWidth/pixelChunkHeight - size of a chunk of pixels that will
-            // map to 1 character.  These are doubles to avoid progressive rounding
-            // error.
-            double pixelChunkWidth = (double)newImage.Width / (double)outputWidth;
-            double pixelChunkHeight = pixelChunkWidth / FontAspectRatio;
+            sw.Start();
+            var dividedBy = newImage.Width / 100;
+            var height = newImage.Height;
 
-            // Calculate output height to capture entire image
-            int outputHeight = (int)Math.Round((double)newImage.Height / pixelChunkHeight);
+            newImage = new Bitmap(newImage, new Size(newImage.Width / dividedBy, newImage.Height / dividedBy));
+            List<string> lines = new List<string>();
+            var path = "test.txt";
 
-            // Generate output image, row by row
-            double pixelOffSetTop = 0.0;
-            StringBuilder sbOutput = new StringBuilder();
-
-            for (int row = 1; row <= outputHeight; row++)
+            for (int i = 0; i < newImage.Height; i++)
             {
-                double pixelOffSetLeft = 0.0;
-
-                for (int col = 1; col <= outputWidth; col++)
+                string line = "";
+                for (int j = 0; j < newImage.Width; j++)
                 {
-                    // Calculate brightness for this set of pixels by averaging
-                    // brightness across all pixels in this pixel chunk
-                    double brightSum = 0.0;
-                    int pixelCount = 0;
-                    for (int pixelLeftInd = 0; pixelLeftInd < (int)pixelChunkWidth; pixelLeftInd++)
-                        for (int pixelTopInd = 0; pixelTopInd < (int)pixelChunkHeight; pixelTopInd++)
-                        {
-                            // Each call to GetBrightness returns value between 0.0 and 1.0
-                            int x = (int)pixelOffSetLeft + pixelLeftInd;
-                            int y = (int)pixelOffSetTop + pixelTopInd;
-                            if ((x < newImage.Width) && (y < newImage.Height))
-                            {
-                                brightSum += newImage.GetPixel(x, y).GetBrightness();
-                                pixelCount++;
-                            }
-                        }
+                    var pixel = newImage.GetPixel(j, i);
+                    var avg = (pixel.R + pixel.G + pixel.B) / 3;
 
-                    // Average brightness for this entire pixel chunk, between 0.0 and 1.0
-                    double pixelChunkBrightness = brightSum / pixelCount;
-
-                    // Target character is just relative position in ordered set of output characters
-                    int outputIndex = (int)Math.Floor(pixelChunkBrightness * OutputCharSet.Length);
-                    if (outputIndex == OutputCharSet.Length)
-                        outputIndex--;
-
-                    char targetChar = OutputCharSet[outputIndex];
-
-                    sbOutput.Append(targetChar);
-
-                    pixelOffSetLeft += pixelChunkWidth;
+                    var c = asciiChars[avg * asciiChars.Length / 255 % asciiChars.Length];
+                    Console.Write(c);
+                    line += c.ToString();
                 }
-                sbOutput.AppendLine();
-                pixelOffSetTop += pixelChunkHeight;
+                lines.Add(line + "\n");
+
+                Console.WriteLine();
             }
 
-            // Dump output string to file
-            File.WriteAllText(outputFile, sbOutput.ToString());
-            
-        }
+            Console.WriteLine("-----------------------------------------------------------------------------------------------------------" +
+                "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 
+            File.WriteAllLines(path, lines);
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed);
+        }
+        #endregion
+
+        #region Setup
         static Bitmap FileBrowse()
         {
             Bitmap originalImage = null;
@@ -144,11 +79,10 @@ namespace Feleves
             if (open.ShowDialog() == DialogResult.OK)
             {
                 originalImage = new Bitmap(open.FileName);
-                imageWidth = originalImage.Width;
-                imageHeight = originalImage.Height;
             }
-            
+
             return originalImage;
         }
+        #endregion
     }
 }
