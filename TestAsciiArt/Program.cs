@@ -7,13 +7,17 @@ using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 using System.Diagnostics;
+using System.IO;
+using System.Globalization;
 
 namespace TestAsciiArt
 {
     internal class Program
     {
         static Bitmap newImage = null;
-        static string asciiChars = "  .,:ilwW@@";
+        //static string asciiChars = "  .,:ilwW@@";
+
+        static string asciiChars = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
         static Stopwatch stopwatch = new Stopwatch();
 
         [STAThread]
@@ -31,22 +35,32 @@ namespace TestAsciiArt
         static void MakeArt(Bitmap newImage)
         {
             var dividedBy = newImage.Width / 130;
+            var height = newImage.Height;
 
             newImage = new Bitmap(newImage, new Size(newImage.Width / dividedBy, newImage.Height / dividedBy));
+            List<string> lines = new List<string>();
+            var path = "test.txt";
 
             for (int i = 0; i < newImage.Height; i++)
             {
+                string line = "";
                 for (int j = 0; j < newImage.Width; j++)
                 {
                     var pixel = newImage.GetPixel(j, i);
                     var avg = (pixel.R + pixel.G + pixel.B) / 3;
 
                     var c = asciiChars[avg * asciiChars.Length / 255 % asciiChars.Length];
-
                     Console.Write(c);
+                    line += c.ToString();
                 }
+                lines.Add(line + "\n");
+
                 Console.WriteLine();    
             }
+
+            Console.WriteLine("-----------------------------------------------------------------------------------------------------------");
+
+            File.WriteAllLines(path, lines);
         }
 
         static Bitmap FileBrowse()
