@@ -15,8 +15,10 @@ namespace TestAsciiArt
     internal class Program
     {
         static Bitmap newImage = null;
-        static string asciiChars = " .:-=+*#%@";
-        static Stopwatch sw = new Stopwatch();
+        //static string asciiChars = "  .,:ilwW@@";
+
+        static string asciiChars = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
+        static Stopwatch stopwatch = new Stopwatch();
 
         [STAThread]
         static void Main(string[] args)
@@ -27,9 +29,7 @@ namespace TestAsciiArt
             newImage = FileBrowse();
             SeqMakeArt(newImage);
 
-            Console.WriteLine("Finished MakeArt()");
-            Thread.Sleep(1000);
-            Environment.Exit(0);
+            Console.ReadLine();
         }
         #region Parallel Approach
         static void ParMakeArt(Bitmap newImage)
@@ -44,8 +44,7 @@ namespace TestAsciiArt
         #region Sequential Approach
         static void SeqMakeArt(Bitmap newImage)
         {
-            sw.Start();
-            var dividedBy = newImage.Width / 100;
+            var dividedBy = newImage.Width / 130;
             var height = newImage.Height;
 
             newImage = new Bitmap(newImage, new Size(newImage.Width / dividedBy, newImage.Height / dividedBy));
@@ -72,8 +71,6 @@ namespace TestAsciiArt
             Console.WriteLine("-----------------------------------------------------------------------------------------------------------");
 
             File.WriteAllLines(path, lines);
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed);
         }
         #endregion
 
