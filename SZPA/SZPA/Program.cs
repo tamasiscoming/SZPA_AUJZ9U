@@ -28,72 +28,16 @@ namespace SZPA
         static string asciiChars2 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
         static string asciiChars = " .:-=+*#%@";
         static Stopwatch sw = new Stopwatch();
-        static string path = "test.txt";
-        static List<string> lines;
 
         [STAThread]
         static void Main(string[] args)
         {
             FileBrowse();
-            WriteAsciiArtToFile();
             Thread.Sleep(1000);
             Environment.Exit(0);
         }
 
-        #region ----------------------------------------Parallel Approach
-        #region ________________________________________GetPixel________________________________________
-        static void ParMakeArt(Bitmap newImage)
-        {
-            //var pixel = newImage.GetPixel(j, i);
-            //var avg = (pixel.R + pixel.G + pixel.B) / 3;
-            //var c = asciiChars[avg * asciiChars.Length / 255 % asciiChars.Length];
-            //Console.Write(c);
-        }
-        #endregion
-
-        static void ThreadJob(Bitmap newImage, int row)
-        {
-            lines = new List<string>();
-            for (int column = 0; column < newImage.Width; column++)
-            {
-                var pixel = newImage.GetPixel(column, row);
-                var avg = (pixel.R + pixel.G + pixel.B) / 3;
-                var c = asciiChars[avg * asciiChars.Length / 255 % asciiChars.Length];
-
-                Console.SetCursorPosition(row, column);
-                Console.Write(c);
-                lines.Append(c.ToString());
-            }
-
-            lines.Add("\n");
-            File.WriteAllLines(path, lines);
-        }
-        #endregion
-
         #region ----------------------------------------Sequentional Approach----------------------------------------
-        #region ________________________________________GetPixel________________________________________
-        static void SeqGetPixel(Bitmap newImage)
-        {
-            //newImage = new Bitmap(newImage, new Size(newImage.Width / dividedBy, newImage.Height / dividedBy));
-            lines = new List<string>();
-
-            for (int y = 0; y < newImage.Height; y++)
-            {
-                string line = "";
-                for (int x = 0; x < newImage.Width; x++)
-                {
-                    var pixel = newImage.GetPixel(x, y);
-                    var avg = (pixel.R + pixel.G + pixel.B) / 3;
-                    var c = asciiChars[avg * asciiChars.Length / 255 % asciiChars.Length];
-                    line += c.ToString();
-                    Console.Write(c);
-                }
-                lines.Add(line + "\n");
-            }
-            File.WriteAllLines(path, lines);
-        }
-        #endregion
-
         #region ________________________________________SeqOne________________________________________
         static string SeqOne(string filepath)
         {
@@ -141,42 +85,152 @@ namespace SZPA
         }
         #endregion
 
+        #region ________________________________________SeqOneFor________________________________________
+        private static string SeqOneFor(string filepath)
+        {
+            Bitmap image = new Bitmap(filepath);
+            int width = image.Width;
+            int height = image.Height;
+            int pixelCount = width * height;
+
+            string asciiImage = "";
+
+            Rectangle rect = new Rectangle(0, 0, width, height);
+
+            int depth = Bitmap.GetPixelFormatSize(image.PixelFormat);
+
+            BitmapData bitmapData =
+                image.LockBits(rect, ImageLockMode.ReadWrite, image.PixelFormat);
+
+            int step = depth / 8;
+
+            byte[] pixels = new byte[(pixelCount * step)];
+            IntPtr iptr = bitmapData.Scan0;
+
+            // Copy data from pointer to array
+            Marshal.Copy(iptr, pixels, 0, pixels.Length);
+
+            int rowCount = 0;
+
+            for (int j = 0; j < pixels.Length - 3; j += 3)
+            {
+                byte b = pixels[j];
+                byte g = pixels[j + 1];
+                byte r = pixels[j + 2];
+
+                double grayScale = (r * 0.3) + (g * 0.59) + (b * 0.11);
+
+                asciiImage += GetCharacterForPixel(grayScale);
+
+                if (j % width == 0 && j != 0)
+                {
+                    rowCount++;
+                    asciiImage += "\n";
+                }
+            }
+
+            Marshal.Copy(pixels, 0, iptr, pixels.Length);
+            image.UnlockBits(bitmapData);
+            return asciiImage;
+        }
+        #endregion
+
         static char GetCharacterForPixel(double grayScaleFactor)
         {
-            return asciiChars[(int)Math.Ceiling(
-                ((asciiChars.Length - 1) * grayScaleFactor) / 255)];
+            return asciiChars[(int)Math.Ceiling(((asciiChars.Length - 1) * grayScaleFactor) / 255)];
         }
+        #endregion
 
+        #region ----------------------------------------Parallel Approach----------------------------------------
+        #region ________________________________________ParallelSimple________________________________________
+        private static string ParallelSimple(string filepath)
+        {
+            Bitmap image = new Bitmap(filepath);
+            int width = image.Width;
+            int height = image.Height;
+            int pixelCount = width * height;
+
+            _imgWidth = width;
+
+            Rectangle rect = new Rectangle(0, 0, width, height);
+
+            int depth = Bitmap.GetPixelFormatSize(image.PixelFormat);
+
+            BitmapData bitmapData = image.LockBits(rect, ImageLockMode.ReadWrite, image.PixelFormat);
+
+            int step = depth / 8;
+
+            byte[] pixels = new byte[(pixelCount * step)];
+            IntPtr iptr = bitmapData.Scan0;
+
+            // Copy data from pointer to array
+            Marshal.Copy(iptr, pixels, 0, pixels.Length);
+
+            char[] charPixels = new char[pixelCount];
+
+            ParallelOptions parallelLoopOptions = new ParallelOptions()
+            {
+                MaxDegreeOfParallelism = Environment.ProcessorCount
+            };
+
+            Parallel.For(0, charPixels.Length, parallelLoopOptions, i =>
+            {
+                int index = i * step;
+                byte b = pixels[index];
+                byte g = pixels[index + 1];
+                byte r = pixels[index + 2];
+                double grayScale = (r * 0.3) + (g * 0.59) + (b * 0.11);
+                charPixels[i] = GetCharacterForPixel(grayScale);
+            });
+
+            Marshal.Copy(pixels, 0, iptr, pixels.Length);
+            image.UnlockBits(bitmapData);
+
+            return new string(charPixels);
+        }
+        #endregion
         #endregion
 
         #region ----------------------------------------Setup----------------------------------------
         private static void MakeAsciiArts(string filepath)
         {
             Stopwatch sw = new Stopwatch();
-
-            // Todo: uncomment this if you want to use sequential solution
-            Console.WriteLine("SequentialAsciiImageConverter started...");
+            #region --------------------Setup_SeqOne()--------------------
+            // todo: uncomment this if you want to use sequential solution
+            Console.WriteLine("--------------------seqone()--------------------");
+            Thread.Sleep(1000);
+            _asciiImage = String.Empty;
             sw.Start();
             _asciiImage = SeqOne(filepath);
             sw.Stop();
-            //_sequentialAsciiImageConverterTime = sw.Elapsed;
+            //_sequentialasciiimageconvertertime = sw.elapsed;
+            WriteAsciiArtToFile("SeqOne");
+            #endregion
 
-            //_asciiImage = String.Empty;
-            //sw.Reset();
-            //Console.WriteLine("SequentialAsciiImageConverterOneFor started...");
-            //sw.Start();
-            //_asciiImage = SequentialAsciiImageConverterOneFor(filepath);
-            //sw.Stop();
-            //_sequentialAsciiImageConverterOneForTime = sw.Elapsed;
+            #region --------------------Setup_SeqOneFor()--------------------
+            Console.WriteLine("--------------------SeqOneFor()--------------------");
+            Thread.Sleep(1000);
+            _asciiImage = String.Empty;
+            sw.Reset();
+            sw.Start();
+            _asciiImage = SeqOneFor(filepath);
+            sw.Stop();
+            //_sequentialasciiimageconverteronefortime = sw.Elapsed;
+            WriteAsciiArtToFile("SeqOneFor");
+            #endregion
 
-            //_asciiImage = String.Empty;
-            //sw.Reset();
-            //Console.WriteLine("ParallelAsciiImageConverter started...");
-            //sw.Start();
-            //_asciiImage = ParallelAsciiImageConverter(filepath);
-            //sw.Stop();
+            #region --------------------Setup_ParallelSimple()--------------------
+            Console.WriteLine("--------------------ParallelSimple()--------------------");
+            Thread.Sleep(1000);
+            _asciiImage = String.Empty;
+            sw.Reset();
+            sw.Start();
+            _asciiImage = ParallelSimple(filepath);
+            sw.Stop();
             //_parallelAsciiImageConverterTime = sw.Elapsed;
-            //_asciiImage = InsertNewLineToAsciiImages(_asciiImage);
+            _asciiImage = InsertNewLineToAsciiImages(_asciiImage);
+            WriteAsciiArtToFile("ParallelSimple");
+            #endregion
 
             //_asciiImage = String.Empty;
             //sw.Reset();
@@ -192,7 +246,7 @@ namespace SZPA
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.InitialDirectory = Environment.CurrentDirectory;
-            openFileDialog.Filter = "Image files (*.jpg, *.jpeg, *.png) | *.jpg; *.jpeg;";
+            openFileDialog.Filter = "Image files (*.jpg, *.jpeg) | *.jpg; *.jpeg;";
             openFileDialog.ShowDialog();
             openFileDialog.Multiselect = false;
             _filePath = openFileDialog.FileName;
@@ -202,12 +256,24 @@ namespace SZPA
 
         static string InsertNewLineToAsciiImages(string asciiFrameImagesWithoutNewLines)
         {
-            return Regex.Replace(asciiFrameImagesWithoutNewLines, ".{" + (_imgWidth + 1) + "}", "$0\n"); // NOTE: .txt has a maximum char number of each line which is 1024
+            // NOTE: .txt has a maximum char number of each line which is 1024
+            return Regex.Replace(asciiFrameImagesWithoutNewLines, ".{" + (_imgWidth + 1) + "}", "$0\n"); 
         }
 
         private static void WriteAsciiArtToFile()
         {
             string finalPath = _filePath + "_ascii.txt";
+            Console.WriteLine("Writing file...");
+
+            File.WriteAllText(finalPath, _asciiImage);
+            Process openPrc = new Process();
+            openPrc.StartInfo.FileName = finalPath;
+            openPrc.Start();
+        }
+
+        private static void WriteAsciiArtToFile(string e)
+        {
+            string finalPath = _filePath + "_" + e + "_ascii.txt";
             Console.WriteLine("Writing file...");
 
             File.WriteAllText(finalPath, _asciiImage);
