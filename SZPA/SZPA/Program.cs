@@ -21,18 +21,15 @@ namespace SZPA
 {
     internal class Program
     {
-        private static string _filePath;
-        private static string _grayRamp = " .:-=+*#%@";
-        private static int _imgWidth = 0;
-        private static string _asciiImage;
-
-        //static Bitmap newImage = FileBrowse();
+        static string _filePath;
+        static int _imgWidth = 0;
+        static string _asciiImage;
+       
+        static string asciiChars2 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
         static string asciiChars = " .:-=+*#%@";
         static Stopwatch sw = new Stopwatch();
         static string path = "test.txt";
         static List<string> lines;
-        //static int dividedBy = newImage.Width / 100; 
-
 
         [STAThread]
         static void Main(string[] args)
