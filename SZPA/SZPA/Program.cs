@@ -25,8 +25,8 @@ namespace SZPA
         static int _imgWidth = 0;
         static string _asciiImage;
        
-        static string asciiChars2 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
         static string asciiChars = " .:-=+*#%@";
+        static string asciiChars2 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
         static Stopwatch sw = new Stopwatch();
 
         [STAThread]
@@ -85,6 +85,7 @@ namespace SZPA
         }
         #endregion
 
+        // todo: fix print bug
         #region ________________________________________SeqOneFor________________________________________
         private static string SeqOneFor(string filepath)
         {
@@ -110,8 +111,6 @@ namespace SZPA
             // Copy data from pointer to array
             Marshal.Copy(iptr, pixels, 0, pixels.Length);
 
-            int rowCount = 0;
-
             for (int j = 0; j < pixels.Length - 3; j += 3)
             {
                 byte b = pixels[j];
@@ -122,9 +121,8 @@ namespace SZPA
 
                 asciiImage += GetCharacterForPixel(grayScale);
 
-                if (j % width == 0 && j != 0)
+                if ((j+3) % width == 0 && j != 0)
                 {
-                    rowCount++;
                     asciiImage += "\n";
                 }
             }
@@ -135,10 +133,6 @@ namespace SZPA
         }
         #endregion
 
-        static char GetCharacterForPixel(double grayScaleFactor)
-        {
-            return asciiChars[(int)Math.Ceiling(((asciiChars.Length - 1) * grayScaleFactor) / 255)];
-        }
         #endregion
 
         #region ----------------------------------------Parallel Approach----------------------------------------
@@ -168,18 +162,19 @@ namespace SZPA
 
             char[] charPixels = new char[pixelCount];
 
-            ParallelOptions parallelLoopOptions = new ParallelOptions()
+            Parallel.For(0, charPixels.Length, new ParallelOptions()
             {
                 MaxDegreeOfParallelism = Environment.ProcessorCount
-            };
-
-            Parallel.For(0, charPixels.Length, parallelLoopOptions, i =>
+            }, i =>
             {
                 int index = i * step;
+
                 byte b = pixels[index];
                 byte g = pixels[index + 1];
                 byte r = pixels[index + 2];
+
                 double grayScale = (r * 0.3) + (g * 0.59) + (b * 0.11);
+
                 charPixels[i] = GetCharacterForPixel(grayScale);
             });
 
@@ -197,7 +192,7 @@ namespace SZPA
             Stopwatch sw = new Stopwatch();
             #region --------------------Setup_SeqOne()--------------------
             // todo: uncomment this if you want to use sequential solution
-            Console.WriteLine("--------------------seqone()--------------------");
+            Console.WriteLine("--------------------SeqOne()--------------------");
             Thread.Sleep(1000);
             _asciiImage = String.Empty;
             sw.Start();
@@ -254,10 +249,15 @@ namespace SZPA
             MakeAsciiArts(_filePath);
         }
 
+        static char GetCharacterForPixel(double grayScaleFactor)
+        {
+            return asciiChars[(int)Math.Ceiling(((asciiChars.Length - 1) * grayScaleFactor) / 255)];
+        }
+
         static string InsertNewLineToAsciiImages(string asciiFrameImagesWithoutNewLines)
         {
             // NOTE: .txt has a maximum char number of each line which is 1024
-            return Regex.Replace(asciiFrameImagesWithoutNewLines, ".{" + (_imgWidth + 1) + "}", "$0\n"); 
+            return Regex.Replace(asciiFrameImagesWithoutNewLines, ".{" + (_imgWidth) + "}", "$0\n"); 
         }
 
         private static void WriteAsciiArtToFile()
@@ -274,12 +274,12 @@ namespace SZPA
         private static void WriteAsciiArtToFile(string e)
         {
             string finalPath = _filePath + "_" + e + "_ascii.txt";
-            Console.WriteLine("Writing file...");
+            Console.WriteLine($"Writing {e} to file...");
 
             File.WriteAllText(finalPath, _asciiImage);
-            Process openPrc = new Process();
-            openPrc.StartInfo.FileName = finalPath;
-            openPrc.Start();
+            Process p = new Process();
+            p.StartInfo.FileName = finalPath;
+            p.Start();
         }
         #endregion
     }
