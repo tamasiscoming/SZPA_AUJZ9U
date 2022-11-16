@@ -34,32 +34,7 @@ namespace SZPA
         [STAThread]
         static void Main(string[] args)
         {
-            Console.WriteLine("Select Ascii Character set by pressing 1 or 2 then enter...");
-            Console.WriteLine("Set 1: " + asciiCharsType1);
-            Console.WriteLine("Set 2: " + asciiCharsType2);
-
-            selection = Console.ReadLine();
-
-            if (selection == "1")
-            {
-                selectedCharset = asciiCharsType1;
-                Console.Clear();
-                Console.WriteLine("You selected set 1: " + asciiCharsType1);
-            }
-            else if (selection == "2")
-            {
-                selectedCharset = asciiCharsType2;
-                Console.Clear();
-                Console.WriteLine("You selected set 2: " + asciiCharsType2);
-            }
-
-            Thread.Sleep(1000);
-
-            Console.WriteLine("Select an image file...");
-            Thread.Sleep(1000);
-
-            FileBrowse();
-            Thread.Sleep(1000);
+            Setup();
             Environment.Exit(0);
         }
 
@@ -331,6 +306,36 @@ namespace SZPA
             #endregion
         }
 
+        static void Setup()
+        {
+            Console.WriteLine("Select Ascii Character set by pressing 1 or 2 then enter...");
+            Console.WriteLine("Set 1: " + asciiCharsType1);
+            Console.WriteLine("Set 2: " + asciiCharsType2);
+
+            selection = Console.ReadLine();
+
+            if (selection == "1")
+            {
+                selectedCharset = asciiCharsType1;
+                Console.Clear();
+                Console.WriteLine("You selected set 1: " + asciiCharsType1);
+            }
+            else if (selection == "2")
+            {
+                selectedCharset = asciiCharsType2;
+                Console.Clear();
+                Console.WriteLine("You selected set 2: " + asciiCharsType2);
+            }
+
+            Thread.Sleep(1000);
+
+            Console.WriteLine("Select an image file...");
+            Thread.Sleep(1000);
+
+            FileBrowse();
+            Thread.Sleep(1000);
+        }
+
         static void FileBrowse()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -354,10 +359,10 @@ namespace SZPA
             return Regex.Replace(asciiFrameImagesWithoutNewLines, ".{" + (_imgWidth) + "}", "$0\n"); 
         }
 
-        private static void WriteAsciiArtToFile(string e)
+        private static void WriteAsciiArtToFile(string type)
         {
-            string finalPath = _filePath + "_" + e + "_ascii.txt";
-            Console.WriteLine($"Writing {e} to file...");
+            string finalPath = _filePath + "_CharSet_" + selection + "_" + type + "_ascii.txt";
+            Console.WriteLine($"Writing {type} to file...");
 
             File.WriteAllText(finalPath, _asciiImage);
             Process p = new Process();
