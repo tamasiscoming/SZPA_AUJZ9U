@@ -24,7 +24,11 @@ namespace SZPA
         static string _filePath;
         static int _imgWidth = 0;
         static string _asciiImage;
-       
+        static TimeSpan time_SeqOne;
+        static TimeSpan time_SeqOneFor;
+        static TimeSpan time_ParallelSimple;
+        static TimeSpan time_ParDataParallel;
+
         static string asciiCharsType1 = " .:-=+*#%@";
         static string asciiCharsType2 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
         static string selectedCharset;
@@ -35,9 +39,11 @@ namespace SZPA
         static void Main(string[] args)
         {
             Setup();
-            Environment.Exit(0);
-        }
 
+            ShowResults(time_SeqOne, time_SeqOneFor, time_ParallelSimple, time_ParDataParallel);
+            Console.ReadLine();
+        }
+        
         #region ---------------------------Sequentional Approach---------------------------
         #region ____________________SeqOne____________________
         static string SeqOne(string filepath)
@@ -86,7 +92,6 @@ namespace SZPA
         }
         #endregion
 
-        // todo: fix print bug
         #region ____________________SeqOneFor____________________
         private static string SeqOneFor(string filepath)
         {
@@ -256,14 +261,13 @@ namespace SZPA
         {
             Stopwatch sw = new Stopwatch();
             #region ---------------------------Setup_SeqOne()---------------------------
-            // todo: uncomment this if you want to use sequential solution
             Console.WriteLine("---------------------------SeqOne()---------------------------");
             Thread.Sleep(1000);
             _asciiImage = String.Empty;
             sw.Start();
             _asciiImage = SeqOne(filepath);
             sw.Stop();
-            //_sequentialasciiimageconvertertime = sw.elapsed;
+            time_SeqOne = sw.Elapsed;
             WriteAsciiArtToFile("SeqOne");
             #endregion
 
@@ -275,7 +279,7 @@ namespace SZPA
             sw.Start();
             _asciiImage = SeqOneFor(filepath);
             sw.Stop();
-            //_sequentialasciiimageconverteronefortime = sw.Elapsed;
+            time_SeqOneFor = sw.Elapsed;
             WriteAsciiArtToFile("SeqOneFor");
             #endregion
 
@@ -287,7 +291,7 @@ namespace SZPA
             sw.Start();
             _asciiImage = ParallelSimple(filepath);
             sw.Stop();
-            //_parallelAsciiImageConverterTime = sw.Elapsed;
+            time_ParallelSimple = sw.Elapsed;
             _asciiImage = InsertNewLineToAsciiImages(_asciiImage);
             WriteAsciiArtToFile("ParallelSimple");
             #endregion
@@ -300,10 +304,26 @@ namespace SZPA
             sw.Start();
             _asciiImage = ParDataParallel(filepath);
             sw.Stop();
-            //_parallelAsciiImageConverterUsingDataParallelismTime = sw.Elapsed;
+            time_ParDataParallel = sw.Elapsed;
             _asciiImage = InsertNewLineToAsciiImages(_asciiImage);
             WriteAsciiArtToFile("ParDataParallel");
             #endregion
+        }
+
+        static void ShowResults(TimeSpan time_seqOne, TimeSpan time_seqOneFor, TimeSpan time_ParallelSimple, TimeSpan time_ParDataParallel)
+        {
+            Console.Clear();
+            Console.WriteLine("Measured time of each approach...");
+            Console.WriteLine("Sequential approach:");
+            Console.SetCursorPosition(21, 3);
+            Console.WriteLine("First approach: {0} -> {1}ms", time_seqOne, time_seqOne.Milliseconds);
+            Console.SetCursorPosition(21, 4);
+            Console.WriteLine("Second approach: {0} -> {1}ms", time_seqOneFor, time_seqOneFor.Milliseconds);
+            Console.WriteLine("Parallel approach:");
+            Console.SetCursorPosition(21, 6);
+            Console.WriteLine("First approach: {0} -> {1}ms", time_ParallelSimple, time_ParallelSimple.Milliseconds);
+            Console.SetCursorPosition(21, 7);
+            Console.WriteLine("Second approach: {0} -> {1}ms", time_ParDataParallel, time_ParDataParallel.Milliseconds);
         }
 
         static void Setup()
