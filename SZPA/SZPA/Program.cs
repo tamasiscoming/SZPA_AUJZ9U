@@ -40,13 +40,14 @@ namespace SZPA
         private static TimeSpan timeGif_ParP_SeqA;
         private static TimeSpan timeGif_SeqP_ParA; 
         private static TimeSpan timeGif_ParP_ParA; 
-        private static TimeSpan timeGif_ParP_ParData; 
+        private static TimeSpan timeGif_ParP_ParDataPar; 
 
         static readonly string asciiCharsType1 = " .:-=+*#%@";
         static readonly string asciiCharsType2 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
         static string selectedCharset;
         static string selection = "";
         static string project = "";
+
         static readonly Stopwatch sw = new Stopwatch();
 
         [STAThread]
@@ -56,7 +57,8 @@ namespace SZPA
             Console.ReadLine();
         }
 
-        #region ---------------------------Sequentional Approach---------------------------
+        #region ---------------------------AsciiImage---------------------------
+        #region ____________________Sequentional Approach____________________
         #region ____________________SeqImage____________________
         static string SeqImage(string filepath)
         {
@@ -92,7 +94,7 @@ namespace SZPA
 
                     double grayScale = (r * 0.3) + (g * 0.59) + (b * 0.11);
 
-                    asciiImage += GetCharacterForPixel(grayScale, selectedCharset);
+                    asciiImage += GetSpecificCharacterForEachPixel(grayScale, selectedCharset);
                 }
 
                 asciiImage += "\n";
@@ -137,9 +139,9 @@ namespace SZPA
 
                 double grayScale = (r * 0.3) + (g * 0.59) + (b * 0.11);
 
-                asciiImage += GetCharacterForPixel(grayScale, selectedCharset);
+                asciiImage += GetSpecificCharacterForEachPixel(grayScale, selectedCharset);
 
-                if ((j+3) % width == 0 && j != 0)
+                if ((j + 3) % width == 0)
                 {
                     asciiImage += "\n";
                 }
@@ -152,7 +154,7 @@ namespace SZPA
         #endregion
         #endregion
 
-        #region ---------------------------Parallel Approach---------------------------
+        #region ____________________Parallel Approach____________________
         #region ____________________ParSimple____________________
         private static string ParallelSimple(string filepath)
         {
@@ -192,7 +194,7 @@ namespace SZPA
 
                 double grayScale = (r * 0.3) + (g * 0.59) + (b * 0.11);
 
-                charPixels[i] = GetCharacterForPixel(grayScale, selectedCharset);
+                charPixels[i] = GetSpecificCharacterForEachPixel(grayScale, selectedCharset);
             });
 
             Marshal.Copy(pixels, 0, iptr, pixels.Length);
@@ -201,8 +203,8 @@ namespace SZPA
             return new string(charPixels);
         }
         #endregion
-        
-        #region ParDataParallel
+
+        #region ____________________ParDataParallel____________________
         private static string ParDataParallel(string filepath)
         {
             int cpuCount = Environment.ProcessorCount;
@@ -228,12 +230,13 @@ namespace SZPA
             // Copy data from pointer to array
             Marshal.Copy(iptr, pixels, 0, pixels.Length);
             Task[] tasks = new Task[cpuCount];
+
             for (int i = 0; i < cpuCount; i++)
             {
                 int j = i;
                 byte[] partialArray = pixels.Skip(j * partialArrayCount).Take(partialArrayCount).ToArray();
 
-                Task t = new Task(() => asciiImage[j] = CalculateCharactersForPartialArray(partialArray, width));
+                Task t = new Task(() => asciiImage[j] = CalcCharacters(partialArray, width));
                 t.Start();
                 tasks[j] = t;
             }
@@ -244,8 +247,10 @@ namespace SZPA
         }
         #endregion
         #endregion
+        #endregion
+
         #region ---------------------------Setup/SideQuests---------------------------
-        private static string CalculateCharactersForPartialArray(byte[] partialArray, int width)
+        private static string CalcCharacters(byte[] partialArray, int width)
         {
             string partialAsciiImage = "";
             int rowCount = 0;
@@ -258,7 +263,7 @@ namespace SZPA
 
                 double grayScale = (r * 0.3) + (g * 0.59) + (b * 0.11);
 
-                partialAsciiImage += GetCharacterForPixel(grayScale, selectedCharset);
+                partialAsciiImage += GetSpecificCharacterForEachPixel(grayScale, selectedCharset);
 
                 if (j % width == 0)
                 {
@@ -304,7 +309,7 @@ namespace SZPA
             asciiImage = ParallelSimple(filepath);
             sw.Stop();
             timeImage_ParallelSimple = sw.Elapsed;
-            asciiImage = InsertNewLineToAsciiImages(asciiImage);
+            asciiImage = AddNewLineToImages(asciiImage);
             WriteAsciiArtToFile("ParallelSimple");
             #endregion
 
@@ -317,27 +322,27 @@ namespace SZPA
             asciiImage = ParDataParallel(filepath);
             sw.Stop();
             timeImage_ParDataParallel = sw.Elapsed;
-            asciiImage = InsertNewLineToAsciiImages(asciiImage);
+            asciiImage = AddNewLineToImages(asciiImage);
             WriteAsciiArtToFile("ParDataParallel");
             #endregion
 
-            ShowAsciiImageResults(timeImage_SeqImage, timeImage_SeqImageOneFor, timeImage_ParallelSimple, timeImage_ParDataParallel);
+            ImageResults(timeImage_SeqImage, timeImage_SeqImageOneFor, timeImage_ParallelSimple, timeImage_ParDataParallel);
         }
 
-        static void ShowAsciiImageResults(TimeSpan time_SeqImage, TimeSpan time_SeqImageOneFor, TimeSpan time_ParallelSimple, TimeSpan time_ParDataParallel)
+        static void ImageResults(TimeSpan time_SeqImage, TimeSpan time_SeqImageOneFor, TimeSpan time_ParallelSimple, TimeSpan time_ParDataParallel)
         {
             Console.Clear();
             Console.WriteLine("Measured time of each approach...");
             Console.WriteLine("Sequential approach:");
+            Console.SetCursorPosition(21, 2);
+            Console.WriteLine("First approach: {0} -> {1}ms", time_SeqImage, time_SeqImage.TotalSeconds);
             Console.SetCursorPosition(21, 3);
-            Console.WriteLine("First approach: {0} -> {1}ms", time_SeqImage, time_SeqImage.Milliseconds);
-            Console.SetCursorPosition(21, 4);
-            Console.WriteLine("Second approach: {0} -> {1}ms", time_SeqImageOneFor, time_SeqImageOneFor.Milliseconds);
+            Console.WriteLine("Second approach: {0} -> {1}ms", time_SeqImageOneFor, time_SeqImageOneFor.TotalSeconds);
             Console.WriteLine("Parallel approach:");
+            Console.SetCursorPosition(21, 5);
+            Console.WriteLine("First approach: {0} -> {1}ms", time_ParallelSimple, time_ParallelSimple.TotalSeconds);
             Console.SetCursorPosition(21, 6);
-            Console.WriteLine("First approach: {0} -> {1}ms", time_ParallelSimple, time_ParallelSimple.Milliseconds);
-            Console.SetCursorPosition(21, 7);
-            Console.WriteLine("Second approach: {0} -> {1}ms", time_ParDataParallel, time_ParDataParallel.Milliseconds);
+            Console.WriteLine("Second approach: {0} -> {1}ms", time_ParDataParallel, time_ParDataParallel.TotalSeconds);
         }
 
         static void SelectCharacterSet()
@@ -362,6 +367,7 @@ namespace SZPA
                 Console.WriteLine("You selected set 2: " + asciiCharsType2);
             }
         }
+
         static void Setup()
         {
             Console.WriteLine("Select Ascii project by pressing 1 or 2 then enter...");
@@ -374,19 +380,25 @@ namespace SZPA
             {
                 SelectCharacterSet();
                 Console.WriteLine("Select an image file...");
-                FileBrowse(project);
+                BrowseFile(project);
             }
             else if (project == "2")
             {
                 SelectCharacterSet();
                 Console.WriteLine("Select a gif file...");
-                FileBrowse(project);
+                BrowseFile(project);
+            }
+            else
+            {
+                Console.Clear();
+                Console.WriteLine("Wrong answer, select a correct answer...");
+                Setup();
             }
             
             Thread.Sleep(1000);
         }
 
-        static void FileBrowse(string project)
+        static void BrowseFile(string project)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.InitialDirectory = Environment.CurrentDirectory;
@@ -408,12 +420,12 @@ namespace SZPA
             }
         }
 
-        static char GetCharacterForPixel(double grayScaleFactor, string selectedCharset)
+        static char GetSpecificCharacterForEachPixel(double grayScaleFactor, string selectedCharset)
         {
             return selectedCharset[(int)Math.Ceiling(((selectedCharset.Length - 1) * grayScaleFactor) / 255)];
         }
 
-        static string InsertNewLineToAsciiImages(string asciiFrameImagesWithoutNewLines)
+        static string AddNewLineToImages(string asciiFrameImagesWithoutNewLines)
         {
             return Regex.Replace(asciiFrameImagesWithoutNewLines, ".{" + (imageWidth) + "}", "$0\n"); 
         }
@@ -430,42 +442,24 @@ namespace SZPA
         }
         #endregion
 
-
-
-
-
-
-
         #region ---------------------------AsciiGif---------------------------
         private static void MakeAsciiGif(string filepath)
         {
-            GifProcessorSequential();
-            // gif frames conversion with 2 for loops
-            SequentialAsciiGeneratorSequentialImageProcessTwoFor();
-            // gif frames conversion with 1 for loops
-            SequentialAsciiGeneratorSequentialImageProcessOneFor();
-
-            ParallelAsciiGeneratorSeqentialImageProcessOneFor();
-
-            SequentialAsciiGeneratorParallelImageProcess();
-
-            ParallelAsciiGeneratorParallelImageProcess();
-
-            ParallelAsciiGeneratorDataParallelImageProcess();
+            SeqGifProcessor();
+            SeqAsciiGen_SeqA_TwoFor();
+            SeqAsciiGen_SeqA_OneFor();
+            ParAsciiGen_SeqA();
+            SeqAsciiGen_ParA();
+            ParAsciiGen_ParA();
+            ParAsciiGen_ParDataPar();
             
-            // displaying elapsed times for each method
             DisplayElapsedTimes();
-
-            //DisplayFirstGifFrameToConsole();
-            //DisplayGifToConsoleFromList();
             DisplayGifToConsoleFromArray();
-
+            
             Console.ReadLine();
         }
 
-        /// <summary>
-        /// Clears the console and displays the calculation times for each solution.
-        /// </summary>
+        #region ---------------------------DisplaysToConsole---------------------------
         static void DisplayElapsedTimes()
         {
             Console.Clear();
@@ -477,29 +471,7 @@ namespace SZPA
                 $"Parallel process, sequential algorithm 1 for loops: {timeGif_ParP_SeqA}");
             Console.WriteLine($"Sequential process, parallel algorithm: {timeGif_SeqP_ParA}");
             Console.WriteLine($"Parallel process, parallel algorithm: {timeGif_ParP_ParA}");
-            Console.WriteLine($"Parallel process, DATA parallel algorithm: {timeGif_ParP_ParData}");
-        }
-
-        /// <summary>
-        /// Replaces the current line where the cursor is located.
-        /// </summary>
-        /// <param name="textToUpdate"></param>
-        //static void UpdateCurrentLine(string textToUpdate)
-        //{
-        //    Console.WriteLine(textToUpdate);
-        //    Console.SetCursorPosition(0, Console.CursorTop - 1);
-        //    ClearCurrentConsoleLine();
-        //}
-
-        /// <summary>
-        /// Clears the line where the cursor is located.
-        /// </summary>
-        static void ClearCurrentConsoleLine()
-        {
-            int currentLineCursor = Console.CursorTop;
-            Console.SetCursorPosition(0, Console.CursorTop);
-            Console.Write(new string(' ', Console.WindowWidth));
-            Console.SetCursorPosition(0, currentLineCursor);
+            Console.WriteLine($"Parallel process, DATA parallel algorithm: {timeGif_ParP_ParDataPar}");
         }
 
         static void DisplayGifToConsoleFromArray()
@@ -513,8 +485,10 @@ namespace SZPA
                 Thread.Sleep(10);
             }
         }
+        #endregion
 
-        static List<string> InsertNewLineToAsciiImages(List<string> asciiFrameImagesWithoutNewLines)
+        #region ---------------------------AddLines---------------------------
+        static List<string> AddNewLineToGifImages(List<string> asciiFrameImagesWithoutNewLines)
         {
             List<string> newList = new List<string>();
             foreach (string asciiFrame in asciiFrameImagesWithoutNewLines)
@@ -529,7 +503,7 @@ namespace SZPA
             return newList;
         }
 
-        static string[] InsertNewLineToAsciiImages(string[] asciiFrameImagesWithoutNewLines)
+        static string[] AddNewLineToGifImages(string[] asciiFrameImagesWithoutNewLines)
         {
             List<string> returnList = new List<string>();
             for (int i = 0; i < asciiFrameImagesWithoutNewLines.Length; i++)
@@ -548,17 +522,18 @@ namespace SZPA
 
             return returnList.ToArray();
         }
+        #endregion
 
         #region ---------------------------PreProcess---------------------------
-        private static void GifProcessorSequential()
+        private static void SeqGifProcessor()
         {
             gifSplitList = new List<string>();
             Console.SetWindowSize(Console.LargestWindowWidth, Console.LargestWindowHeight);
             string gifPath = path;
-            GenerateImagesFromGIFSequential(gifPath);
+            SeqCreateImagesFromGif(gifPath);
         }
 
-        static void GenerateImagesFromGIFSequential(string gifPath)
+        static void SeqCreateImagesFromGif(string gifPath)
         {
             Console.WriteLine("Generating jpgs from gif...");
             bool exists = Directory.Exists(gifSplitImages);
@@ -595,11 +570,8 @@ namespace SZPA
         }
         #endregion
 
-        #region Algs
-        /// <summary>
-        /// Converting images sequentially into ascii art with a sequential algorithm that has 2 for loops in it.
-        /// </summary>
-        static void SequentialAsciiGeneratorSequentialImageProcessTwoFor()
+        #region ---------------------------GifProcessAlgs---------------------------
+        static void SeqAsciiGen_SeqA_TwoFor()
         {
             Console.WriteLine("Sequential AsciiGenerator with Sequential ImageProcess 2 for loops...");
             Thread.Sleep(2000);
@@ -625,10 +597,7 @@ namespace SZPA
             timeGif_SeqP_SeqA_TwoFor = sw.Elapsed;
         }
 
-        /// <summary>
-        /// Converting images sequentially into ascii art with a sequential algorithm that has 1 for loops in it.
-        /// </summary>
-        static void SequentialAsciiGeneratorSequentialImageProcessOneFor()
+        static void SeqAsciiGen_SeqA_OneFor()
         {
             Console.Clear();
             Console.WriteLine("Sequential AsciiGenerator with Sequential ImageProcess 1 for loop...");
@@ -657,10 +626,7 @@ namespace SZPA
             timeGif_SeqP_SeqA_OneFor = sw.Elapsed;
         }
 
-        /// <summary>
-        /// Converting images parallel into an ascii art with a sequential algorithm that has 1 for loops in it.
-        /// </summary>
-        static void ParallelAsciiGeneratorSeqentialImageProcessOneFor()
+        static void ParAsciiGen_SeqA()
         {
             Console.Clear();
             Console.WriteLine("Parallel AsciiGenerator with Sequential ImageProcess 1 for loop...");
@@ -689,10 +655,7 @@ namespace SZPA
             timeGif_ParP_SeqA = sw.Elapsed;
         }
 
-        /// <summary>
-        /// Converting images sequentially into an ascii art with a parallel algorithm that has 1 for loops in it.
-        /// </summary>
-        static void SequentialAsciiGeneratorParallelImageProcess()
+        static void SeqAsciiGen_ParA()
         {
             Console.Clear();
             Console.WriteLine("Sequential AsciiGenerator with Parallel ImageProcess...");
@@ -719,13 +682,10 @@ namespace SZPA
             sw.Stop();
             timeGif_SeqP_ParA = sw.Elapsed;
 
-            gifSplitList = InsertNewLineToAsciiImages(gifSplitList);
+            gifSplitList = AddNewLineToGifImages(gifSplitList);
         }
 
-        /// <summary>
-        /// Converting images in a parallel way into an ascii art with a parallel algorithm that has 1 for loops in it.
-        /// </summary>
-        static void ParallelAsciiGeneratorParallelImageProcess()
+        static void ParAsciiGen_ParA()
         {
             Console.Clear();
             Console.WriteLine("Parallel AsciiGenerator with parallel ImageProcess 1 for loop...");
@@ -753,13 +713,10 @@ namespace SZPA
             sw.Stop();
             timeGif_ParP_ParA = sw.Elapsed;
 
-            gifSplitArray = InsertNewLineToAsciiImages(gifSplitArray);
+            gifSplitArray = AddNewLineToGifImages(gifSplitArray);
         }
 
-        /// <summary>
-        /// Converting images in a parallel way into an ascii art with a data-parallel algorithm that has 1 for loops in it.
-        /// </summary>
-        static void ParallelAsciiGeneratorDataParallelImageProcess()
+        static void ParAsciiGen_ParDataPar()
         {
             Console.Clear();
             Console.WriteLine("Parallel AsciiGenerator with DATA parallel ImageProcess 1 for loop...");
@@ -785,26 +742,10 @@ namespace SZPA
             });
 
             sw.Stop();
-            timeGif_ParP_ParData = sw.Elapsed;
-            gifSplitArray = InsertNewLineToAsciiImages(gifSplitArray);
+            timeGif_ParP_ParDataPar = sw.Elapsed;
+            gifSplitArray = AddNewLineToGifImages(gifSplitArray);
         }
         #endregion
-
-        static void ShowAsciiGifResults()
-        {
-            Console.Clear();
-            Console.WriteLine("Measured time of each approach...");
-            Console.WriteLine("Sequential approach:");
-            //Console.SetCursorPosition(21, 3);
-            //Console.WriteLine("First approach: {0} -> {1}ms", timeImage_SeqImage, timeImage_SeqImage.Milliseconds);
-            //Console.SetCursorPosition(21, 4);
-            //Console.WriteLine("Second approach: {0} -> {1}ms", timeImage_SeqImageOneFor, timeImage_SeqImageOneFor.Milliseconds);
-            //Console.WriteLine("Parallel approach:");
-            //Console.SetCursorPosition(21, 6);
-            //Console.WriteLine("First approach: {0} -> {1}ms", timeImage_ParallelSimple, timeImage_ParallelSimple.Milliseconds);
-            //Console.SetCursorPosition(21, 7);
-            //Console.WriteLine("Second approach: {0} -> {1}ms", timeImage_ParDataParallel, timeImage_ParDataParallel.Milliseconds);
-        }
         #endregion
     }
 }
