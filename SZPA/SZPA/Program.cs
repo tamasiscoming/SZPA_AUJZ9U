@@ -16,37 +16,49 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using static System.Net.Mime.MediaTypeNames;
 using System.Text.RegularExpressions;
+using Image = System.Drawing.Image;
 
 namespace SZPA
 {
     internal class Program
     {
-        static string _filePath;
-        static int _imgWidth = 0;
-        static string _asciiImage;
-        static TimeSpan time_SeqOne;
-        static TimeSpan time_SeqOneFor;
-        static TimeSpan time_ParallelSimple;
-        static TimeSpan time_ParDataParallel;
+        private static string gifSplitImages = "GifSplitImages";
 
-        static string asciiCharsType1 = " .:-=+*#%@";
-        static string asciiCharsType2 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
+        private static List<string> gifSplitList;
+        private static string[] gifSplitArray;
+
+        static string path;
+        static int imageWidth = 0;
+        static string asciiImage;
+        static TimeSpan timeImage_SeqImage;
+        static TimeSpan timeImage_SeqImageOneFor;
+        static TimeSpan timeImage_ParallelSimple;
+        static TimeSpan timeImage_ParDataParallel;
+
+        private static TimeSpan timeGif_SeqP_SeqA_TwoFor;
+        private static TimeSpan timeGif_SeqP_SeqA_OneFor;
+        private static TimeSpan timeGif_ParP_SeqA;
+        private static TimeSpan timeGif_SeqP_ParA; 
+        private static TimeSpan timeGif_ParP_ParA; 
+        private static TimeSpan timeGif_ParP_ParData; 
+
+        static readonly string asciiCharsType1 = " .:-=+*#%@";
+        static readonly string asciiCharsType2 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
         static string selectedCharset;
         static string selection = "";
-        static Stopwatch sw = new Stopwatch();
+        static string project = "";
+        static readonly Stopwatch sw = new Stopwatch();
 
         [STAThread]
         static void Main(string[] args)
         {
             Setup();
-
-            ShowResults(time_SeqOne, time_SeqOneFor, time_ParallelSimple, time_ParDataParallel);
             Console.ReadLine();
         }
-        
+
         #region ---------------------------Sequentional Approach---------------------------
-        #region ____________________SeqOne____________________
-        static string SeqOne(string filepath)
+        #region ____________________SeqImage____________________
+        static string SeqImage(string filepath)
         {
             Bitmap image = new Bitmap(filepath);
             int width = image.Width;
@@ -92,8 +104,8 @@ namespace SZPA
         }
         #endregion
 
-        #region ____________________SeqOneFor____________________
-        private static string SeqOneFor(string filepath)
+        #region ____________________SeqImageOneFor____________________
+        private static string SeqImageOneFor(string filepath)
         {
             Bitmap image = new Bitmap(filepath);
             int width = image.Width;
@@ -149,7 +161,7 @@ namespace SZPA
             int height = image.Height;
             int pixelCount = width * height;
 
-            _imgWidth = width;
+            imageWidth = width;
 
             Rectangle rect = new Rectangle(0, 0, width, height);
 
@@ -198,7 +210,7 @@ namespace SZPA
             int width = image.Width;
             int height = image.Height;
             int pixelCount = width * height;
-            _imgWidth = width;
+            imageWidth = width;
             Rectangle rect = new Rectangle(0, 0, width, height);
 
             int depth = Bitmap.GetPixelFormatSize(image.PixelFormat);
@@ -257,68 +269,70 @@ namespace SZPA
             return partialAsciiImage;
         }
 
-        private static void MakeAsciiArts(string filepath)
+        private static void MakeAsciiImage(string filepath)
         {
             Stopwatch sw = new Stopwatch();
-            #region ---------------------------Setup_SeqOne()---------------------------
-            Console.WriteLine("---------------------------SeqOne()---------------------------");
+            #region ---------------------------Setup_SeqImage()---------------------------
+            Console.WriteLine("---------------------------SeqImage()---------------------------");
             Thread.Sleep(1000);
-            _asciiImage = String.Empty;
+            asciiImage = String.Empty;
             sw.Start();
-            _asciiImage = SeqOne(filepath);
+            asciiImage = SeqImage(filepath);
             sw.Stop();
-            time_SeqOne = sw.Elapsed;
-            WriteAsciiArtToFile("SeqOne");
+            timeImage_SeqImage = sw.Elapsed;
+            WriteAsciiArtToFile("SeqImage");
             #endregion
 
-            #region ---------------------------Setup_SeqOneFor()---------------------------
-            Console.WriteLine("---------------------------SeqOneFor()---------------------------");
+            #region ---------------------------Setup_SeqImageOneFor()---------------------------
+            Console.WriteLine("---------------------------SeqImageOneFor()---------------------------");
             Thread.Sleep(1000);
-            _asciiImage = String.Empty;
+            asciiImage = String.Empty;
             sw.Reset();
             sw.Start();
-            _asciiImage = SeqOneFor(filepath);
+            asciiImage = SeqImageOneFor(filepath);
             sw.Stop();
-            time_SeqOneFor = sw.Elapsed;
-            WriteAsciiArtToFile("SeqOneFor");
+            timeImage_SeqImageOneFor = sw.Elapsed;
+            WriteAsciiArtToFile("SeqImageOneFor");
             #endregion
 
             #region ---------------------------Setup_ParallelSimple()---------------------------
             Console.WriteLine("---------------------------ParallelSimple()---------------------------");
             Thread.Sleep(1000);
-            _asciiImage = String.Empty;
+            asciiImage = String.Empty;
             sw.Reset();
             sw.Start();
-            _asciiImage = ParallelSimple(filepath);
+            asciiImage = ParallelSimple(filepath);
             sw.Stop();
-            time_ParallelSimple = sw.Elapsed;
-            _asciiImage = InsertNewLineToAsciiImages(_asciiImage);
+            timeImage_ParallelSimple = sw.Elapsed;
+            asciiImage = InsertNewLineToAsciiImages(asciiImage);
             WriteAsciiArtToFile("ParallelSimple");
             #endregion
 
             #region ---------------------------Setup_ParDataParallel()---------------------------
             Console.WriteLine("---------------------------ParDataParallel---------------------------");
             Thread.Sleep(1000);
-            _asciiImage = String.Empty; 
+            asciiImage = String.Empty; 
             sw.Reset();
             sw.Start();
-            _asciiImage = ParDataParallel(filepath);
+            asciiImage = ParDataParallel(filepath);
             sw.Stop();
-            time_ParDataParallel = sw.Elapsed;
-            _asciiImage = InsertNewLineToAsciiImages(_asciiImage);
+            timeImage_ParDataParallel = sw.Elapsed;
+            asciiImage = InsertNewLineToAsciiImages(asciiImage);
             WriteAsciiArtToFile("ParDataParallel");
             #endregion
+
+            ShowAsciiImageResults(timeImage_SeqImage, timeImage_SeqImageOneFor, timeImage_ParallelSimple, timeImage_ParDataParallel);
         }
 
-        static void ShowResults(TimeSpan time_seqOne, TimeSpan time_seqOneFor, TimeSpan time_ParallelSimple, TimeSpan time_ParDataParallel)
+        static void ShowAsciiImageResults(TimeSpan time_SeqImage, TimeSpan time_SeqImageOneFor, TimeSpan time_ParallelSimple, TimeSpan time_ParDataParallel)
         {
             Console.Clear();
             Console.WriteLine("Measured time of each approach...");
             Console.WriteLine("Sequential approach:");
             Console.SetCursorPosition(21, 3);
-            Console.WriteLine("First approach: {0} -> {1}ms", time_seqOne, time_seqOne.Milliseconds);
+            Console.WriteLine("First approach: {0} -> {1}ms", time_SeqImage, time_SeqImage.Milliseconds);
             Console.SetCursorPosition(21, 4);
-            Console.WriteLine("Second approach: {0} -> {1}ms", time_seqOneFor, time_seqOneFor.Milliseconds);
+            Console.WriteLine("Second approach: {0} -> {1}ms", time_SeqImageOneFor, time_SeqImageOneFor.Milliseconds);
             Console.WriteLine("Parallel approach:");
             Console.SetCursorPosition(21, 6);
             Console.WriteLine("First approach: {0} -> {1}ms", time_ParallelSimple, time_ParallelSimple.Milliseconds);
@@ -326,8 +340,9 @@ namespace SZPA
             Console.WriteLine("Second approach: {0} -> {1}ms", time_ParDataParallel, time_ParDataParallel.Milliseconds);
         }
 
-        static void Setup()
+        static void SelectCharacterSet()
         {
+            Console.Clear();
             Console.WriteLine("Select Ascii Character set by pressing 1 or 2 then enter...");
             Console.WriteLine("Set 1: " + asciiCharsType1);
             Console.WriteLine("Set 2: " + asciiCharsType2);
@@ -346,26 +361,51 @@ namespace SZPA
                 Console.Clear();
                 Console.WriteLine("You selected set 2: " + asciiCharsType2);
             }
+        }
+        static void Setup()
+        {
+            Console.WriteLine("Select Ascii project by pressing 1 or 2 then enter...");
+            Console.WriteLine("Press 1 for converting image");
+            Console.WriteLine("Press 2 for converting gif");
 
-            Thread.Sleep(1000);
+            project = Console.ReadLine();
 
-            Console.WriteLine("Select an image file...");
-            Thread.Sleep(1000);
-
-            FileBrowse();
+            if (project == "1")
+            {
+                SelectCharacterSet();
+                Console.WriteLine("Select an image file...");
+                FileBrowse(project);
+            }
+            else if (project == "2")
+            {
+                SelectCharacterSet();
+                Console.WriteLine("Select a gif file...");
+                FileBrowse(project);
+            }
+            
             Thread.Sleep(1000);
         }
 
-        static void FileBrowse()
+        static void FileBrowse(string project)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.InitialDirectory = Environment.CurrentDirectory;
-            openFileDialog.Filter = "Image files (*.jpg, *.jpeg) | *.jpg; *.jpeg;";
-            openFileDialog.ShowDialog();
-            openFileDialog.Multiselect = false;
-            _filePath = openFileDialog.FileName;
-
-            MakeAsciiArts(_filePath);
+            if (project == "1")
+            {
+                openFileDialog.Filter = "Image files (*.jpg, *.jpeg) | *.jpg; *.jpeg;";
+                openFileDialog.ShowDialog();
+                openFileDialog.Multiselect = false;
+                path = openFileDialog.FileName;
+                MakeAsciiImage(path);   
+            }
+            else if (project == "2")
+            {
+                openFileDialog.Filter = "Image files (*.gif) | *.gif;";
+                openFileDialog.ShowDialog();
+                openFileDialog.Multiselect = false;
+                path = openFileDialog.FileName;
+                MakeAsciiGif(path);
+            }
         }
 
         static char GetCharacterForPixel(double grayScaleFactor, string selectedCharset)
@@ -375,19 +415,395 @@ namespace SZPA
 
         static string InsertNewLineToAsciiImages(string asciiFrameImagesWithoutNewLines)
         {
-            // NOTE: .txt has a maximum char number of each line which is 1024
-            return Regex.Replace(asciiFrameImagesWithoutNewLines, ".{" + (_imgWidth) + "}", "$0\n"); 
+            return Regex.Replace(asciiFrameImagesWithoutNewLines, ".{" + (imageWidth) + "}", "$0\n"); 
         }
 
         private static void WriteAsciiArtToFile(string type)
         {
-            string finalPath = _filePath + "_CharSet_" + selection + "_" + type + "_ascii.txt";
+            string finalPath = path + "_CharSet_" + selection + "_" + type + "_ascii.txt";
             Console.WriteLine($"Writing {type} to file...");
 
-            File.WriteAllText(finalPath, _asciiImage);
+            File.WriteAllText(finalPath, asciiImage);
             Process p = new Process();
             p.StartInfo.FileName = finalPath;
             p.Start();
+        }
+        #endregion
+
+
+
+
+
+
+
+        #region ---------------------------AsciiGif---------------------------
+        private static void MakeAsciiGif(string filepath)
+        {
+            GifProcessorSequential();
+            // gif frames conversion with 2 for loops
+            SequentialAsciiGeneratorSequentialImageProcessTwoFor();
+            // gif frames conversion with 1 for loops
+            SequentialAsciiGeneratorSequentialImageProcessOneFor();
+
+            ParallelAsciiGeneratorSeqentialImageProcessOneFor();
+
+            SequentialAsciiGeneratorParallelImageProcess();
+
+            ParallelAsciiGeneratorParallelImageProcess();
+
+            ParallelAsciiGeneratorDataParallelImageProcess();
+            
+            // displaying elapsed times for each method
+            DisplayElapsedTimes();
+
+            //DisplayFirstGifFrameToConsole();
+            //DisplayGifToConsoleFromList();
+            DisplayGifToConsoleFromArray();
+
+            Console.ReadLine();
+        }
+
+        /// <summary>
+        /// Clears the console and displays the calculation times for each solution.
+        /// </summary>
+        static void DisplayElapsedTimes()
+        {
+            Console.Clear();
+            Console.WriteLine(
+                $"Sequential process, sequential algorithm 2 for loops: {timeGif_SeqP_SeqA_TwoFor}");
+            Console.WriteLine(
+                $"Sequential process, sequential algorithm 1 for loops: {timeGif_SeqP_SeqA_OneFor}");
+            Console.WriteLine(
+                $"Parallel process, sequential algorithm 1 for loops: {timeGif_ParP_SeqA}");
+            Console.WriteLine($"Sequential process, parallel algorithm: {timeGif_SeqP_ParA}");
+            Console.WriteLine($"Parallel process, parallel algorithm: {timeGif_ParP_ParA}");
+            Console.WriteLine($"Parallel process, DATA parallel algorithm: {timeGif_ParP_ParData}");
+        }
+
+        /// <summary>
+        /// Replaces the current line where the cursor is located.
+        /// </summary>
+        /// <param name="textToUpdate"></param>
+        //static void UpdateCurrentLine(string textToUpdate)
+        //{
+        //    Console.WriteLine(textToUpdate);
+        //    Console.SetCursorPosition(0, Console.CursorTop - 1);
+        //    ClearCurrentConsoleLine();
+        //}
+
+        /// <summary>
+        /// Clears the line where the cursor is located.
+        /// </summary>
+        static void ClearCurrentConsoleLine()
+        {
+            int currentLineCursor = Console.CursorTop;
+            Console.SetCursorPosition(0, Console.CursorTop);
+            Console.Write(new string(' ', Console.WindowWidth));
+            Console.SetCursorPosition(0, currentLineCursor);
+        }
+
+        static void DisplayGifToConsoleFromArray()
+        {
+            Console.WriteLine("Press any key to display the animation...");
+            Console.ReadKey();
+            foreach (string asciiFrame in gifSplitArray)
+            {
+                Console.Clear();
+                Console.WriteLine(asciiFrame);
+                Thread.Sleep(10);
+            }
+        }
+
+        static List<string> InsertNewLineToAsciiImages(List<string> asciiFrameImagesWithoutNewLines)
+        {
+            List<string> newList = new List<string>();
+            foreach (string asciiFrame in asciiFrameImagesWithoutNewLines)
+            {
+                List<string> l = Enumerable
+                    .Range(0, asciiFrame.Length / imageWidth)
+                    .Select(i => asciiFrame.Substring(i * imageWidth, imageWidth))
+                    .ToList();
+                newList.Add(string.Join("\n", l));
+            }
+
+            return newList;
+        }
+
+        static string[] InsertNewLineToAsciiImages(string[] asciiFrameImagesWithoutNewLines)
+        {
+            List<string> returnList = new List<string>();
+            for (int i = 0; i < asciiFrameImagesWithoutNewLines.Length; i++)
+            {
+                if (asciiFrameImagesWithoutNewLines[i] == null)
+                {
+                    asciiFrameImagesWithoutNewLines[i] = String.Empty;
+                }
+
+                List<string> l = Enumerable
+                    .Range(0, asciiFrameImagesWithoutNewLines[i].Length / imageWidth)
+                    .Select(j => asciiFrameImagesWithoutNewLines[i].Substring(j * imageWidth, imageWidth))
+                    .ToList();
+                returnList.Add(string.Join("\n", l));
+            }
+
+            return returnList.ToArray();
+        }
+
+        #region ---------------------------PreProcess---------------------------
+        private static void GifProcessorSequential()
+        {
+            gifSplitList = new List<string>();
+            Console.SetWindowSize(Console.LargestWindowWidth, Console.LargestWindowHeight);
+            string gifPath = path;
+            GenerateImagesFromGIFSequential(gifPath);
+        }
+
+        static void GenerateImagesFromGIFSequential(string gifPath)
+        {
+            Console.WriteLine("Generating jpgs from gif...");
+            bool exists = Directory.Exists(gifSplitImages);
+
+            if (!exists)
+            {
+                Directory.CreateDirectory(gifSplitImages);
+            }
+            else
+            {
+                Directory.Delete(gifSplitImages, true);
+                Directory.CreateDirectory(gifSplitImages);
+            }
+
+            Image gifImg = Image.FromFile(gifPath);
+            FrameDimension dimension = new FrameDimension(gifImg.FrameDimensionsList[0]);
+
+            // Number of frames
+            int frameCount = gifImg.GetFrameCount(dimension);
+
+            Image[] frames = new Image[frameCount];
+            string[] nameSplitHelper = path.Split('\\')[path.Split('\\').Length - 1].Split('.');
+
+
+            for (int i = 0; i < frameCount; i++)
+            {
+                // Return an Image at a certain index
+                gifImg.SelectActiveFrame(dimension, i);
+                frames[i] = ((Image)gifImg.Clone());
+
+                Console.WriteLine(gifSplitImages + "/" + nameSplitHelper[0] + $"_{i}.jpg");
+                frames[i].Save(gifSplitImages + "/" + nameSplitHelper[0] + $"_{i}.jpg", ImageFormat.Jpeg);
+            }
+        }
+        #endregion
+
+        #region Algs
+        /// <summary>
+        /// Converting images sequentially into ascii art with a sequential algorithm that has 2 for loops in it.
+        /// </summary>
+        static void SequentialAsciiGeneratorSequentialImageProcessTwoFor()
+        {
+            Console.WriteLine("Sequential AsciiGenerator with Sequential ImageProcess 2 for loops...");
+            Thread.Sleep(2000);
+
+            string[] imgPaths = Directory.GetFiles(gifSplitImages, "*.jpg",
+                SearchOption.TopDirectoryOnly);
+
+            gifSplitList.Clear();
+
+            Console.WriteLine($"Gif split list contains {imgPaths.Length} images \n");
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            for (int i = 0; i < imgPaths.Length; i++)
+            {
+                string asciiImage = SeqImage(imgPaths[i]);
+                gifSplitList.Add(asciiImage);
+                Console.WriteLine($"{i}. split from the list is ready...");
+            }
+
+            sw.Stop();
+            timeGif_SeqP_SeqA_TwoFor = sw.Elapsed;
+        }
+
+        /// <summary>
+        /// Converting images sequentially into ascii art with a sequential algorithm that has 1 for loops in it.
+        /// </summary>
+        static void SequentialAsciiGeneratorSequentialImageProcessOneFor()
+        {
+            Console.Clear();
+            Console.WriteLine("Sequential AsciiGenerator with Sequential ImageProcess 1 for loop...");
+            Thread.Sleep(2000);
+
+            string[] imgPaths = Directory.GetFiles(gifSplitImages, "*.jpg",
+                SearchOption.TopDirectoryOnly);
+
+            gifSplitList.Clear();
+
+
+            Console.WriteLine($"Gif split list contains {imgPaths.Length} images \n");
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            for (int i = 0; i < imgPaths.Length; i++)
+            {
+                string asciiImage = SeqImageOneFor(imgPaths[i]);
+                gifSplitList.Add(asciiImage);
+                //UpdateCurrentLine($"{i}. ascii img is done");
+                Console.WriteLine($"{i}. split from the list is ready...");
+            }
+
+            sw.Stop();
+            timeGif_SeqP_SeqA_OneFor = sw.Elapsed;
+        }
+
+        /// <summary>
+        /// Converting images parallel into an ascii art with a sequential algorithm that has 1 for loops in it.
+        /// </summary>
+        static void ParallelAsciiGeneratorSeqentialImageProcessOneFor()
+        {
+            Console.Clear();
+            Console.WriteLine("Parallel AsciiGenerator with Sequential ImageProcess 1 for loop...");
+            Thread.Sleep(2000);
+
+            string[] imgPaths = Directory.GetFiles(gifSplitImages, "*.jpg",
+                SearchOption.TopDirectoryOnly);
+
+            Console.WriteLine($"Gif split list contains {imgPaths.Length} images \n");
+
+            gifSplitArray = new string[imgPaths.Length];
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            Parallel.For(0, imgPaths.Length, i =>
+            {
+                int j = i;
+                string asciiImage = SeqImageOneFor(imgPaths[j]);
+
+                gifSplitArray[j] = asciiImage;
+                Console.WriteLine($"{j}. split from the list is ready...");
+            });
+
+            sw.Stop();
+            timeGif_ParP_SeqA = sw.Elapsed;
+        }
+
+        /// <summary>
+        /// Converting images sequentially into an ascii art with a parallel algorithm that has 1 for loops in it.
+        /// </summary>
+        static void SequentialAsciiGeneratorParallelImageProcess()
+        {
+            Console.Clear();
+            Console.WriteLine("Sequential AsciiGenerator with Parallel ImageProcess...");
+            Thread.Sleep(2000);
+
+            string[] imgPaths = Directory.GetFiles(gifSplitImages, "*.jpg",
+                SearchOption.TopDirectoryOnly);
+
+            gifSplitList.Clear();
+
+
+            Console.WriteLine($"Gif split list contains {imgPaths.Length} images \n");
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            for (int i = 0; i < imgPaths.Length; i++)
+            {
+                string asciiImage = ParallelSimple(imgPaths[i]);
+                gifSplitList.Add(asciiImage);
+                Console.WriteLine($"{i}. split from the list is ready...");
+            }
+
+            sw.Stop();
+            timeGif_SeqP_ParA = sw.Elapsed;
+
+            gifSplitList = InsertNewLineToAsciiImages(gifSplitList);
+        }
+
+        /// <summary>
+        /// Converting images in a parallel way into an ascii art with a parallel algorithm that has 1 for loops in it.
+        /// </summary>
+        static void ParallelAsciiGeneratorParallelImageProcess()
+        {
+            Console.Clear();
+            Console.WriteLine("Parallel AsciiGenerator with parallel ImageProcess 1 for loop...");
+            Thread.Sleep(2000);
+
+            string[] imgPaths = Directory.GetFiles(gifSplitImages, "*.jpg",
+                SearchOption.TopDirectoryOnly);
+
+            Console.WriteLine($"Gif split list contains {imgPaths.Length} images \n");
+
+            gifSplitArray = new string[imgPaths.Length];
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            Parallel.For(0, imgPaths.Length, i =>
+            {
+                int j = i;
+                string asciiImage = ParallelSimple(imgPaths[j]);
+
+                gifSplitArray[j] = asciiImage;
+                Console.WriteLine($"{j}. split from the list is ready...");
+            });
+
+            sw.Stop();
+            timeGif_ParP_ParA = sw.Elapsed;
+
+            gifSplitArray = InsertNewLineToAsciiImages(gifSplitArray);
+        }
+
+        /// <summary>
+        /// Converting images in a parallel way into an ascii art with a data-parallel algorithm that has 1 for loops in it.
+        /// </summary>
+        static void ParallelAsciiGeneratorDataParallelImageProcess()
+        {
+            Console.Clear();
+            Console.WriteLine("Parallel AsciiGenerator with DATA parallel ImageProcess 1 for loop...");
+            Thread.Sleep(2000);
+
+            string[] imgPaths = Directory.GetFiles(gifSplitImages, "*.jpg",
+                SearchOption.TopDirectoryOnly);
+
+            Console.WriteLine($"Gif split list contains {imgPaths.Length} images \n");
+
+            gifSplitArray = new string[imgPaths.Length];
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            Parallel.For(0, imgPaths.Length, i =>
+            {
+                int j = i;
+                string asciiImage = ParDataParallel(imgPaths[j]);
+
+                gifSplitArray[j] = asciiImage;
+                Console.WriteLine($"{j}. split from the list is ready...");
+            });
+
+            sw.Stop();
+            timeGif_ParP_ParData = sw.Elapsed;
+            gifSplitArray = InsertNewLineToAsciiImages(gifSplitArray);
+        }
+        #endregion
+
+        static void ShowAsciiGifResults()
+        {
+            Console.Clear();
+            Console.WriteLine("Measured time of each approach...");
+            Console.WriteLine("Sequential approach:");
+            //Console.SetCursorPosition(21, 3);
+            //Console.WriteLine("First approach: {0} -> {1}ms", timeImage_SeqImage, timeImage_SeqImage.Milliseconds);
+            //Console.SetCursorPosition(21, 4);
+            //Console.WriteLine("Second approach: {0} -> {1}ms", timeImage_SeqImageOneFor, timeImage_SeqImageOneFor.Milliseconds);
+            //Console.WriteLine("Parallel approach:");
+            //Console.SetCursorPosition(21, 6);
+            //Console.WriteLine("First approach: {0} -> {1}ms", timeImage_ParallelSimple, timeImage_ParallelSimple.Milliseconds);
+            //Console.SetCursorPosition(21, 7);
+            //Console.WriteLine("Second approach: {0} -> {1}ms", timeImage_ParDataParallel, timeImage_ParDataParallel.Milliseconds);
         }
         #endregion
     }
