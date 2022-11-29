@@ -1,54 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.IO;
-using System.Globalization;
-using static System.Windows.Forms.LinkLabel;
-using System.Collections;
-using System.Data.Common;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
-using static System.Net.Mime.MediaTypeNames;
 using System.Text.RegularExpressions;
-using Image = System.Drawing.Image;
 
 namespace SZPA
 {
     internal class Program
     {
         private static string gifSplitImages = "GifSplitImages";
-
+        private static readonly string asciiCharsType1 = " .:-=+*#%@";
+        private static readonly string asciiCharsType2 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
+        private static string selection;
+        private static string project;
+        private static string selectedCharset;
         private static List<string> gifSplitList;
         private static string[] gifSplitArray;
-
-        static string path;
-        static int imageWidth = 0;
-        static string asciiImage;
-        static TimeSpan timeImage_SeqImage;
-        static TimeSpan timeImage_SeqImageOneFor;
-        static TimeSpan timeImage_ParallelSimple;
-        static TimeSpan timeImage_ParDataParallel;
-
+        private static string path;
+        private static int imageWidth = 0;
+        private static string asciiImage;
+        private static TimeSpan timeImage_SeqImage;
+        private static TimeSpan timeImage_SeqImageOneFor;
+        private static TimeSpan timeImage_ParallelSimple;
+        private static TimeSpan timeImage_ParDataParallel;
         private static TimeSpan timeGif_SeqP_SeqA_TwoFor;
         private static TimeSpan timeGif_SeqP_SeqA_OneFor;
         private static TimeSpan timeGif_ParP_SeqA;
-        private static TimeSpan timeGif_SeqP_ParA; 
-        private static TimeSpan timeGif_ParP_ParA; 
-        private static TimeSpan timeGif_ParP_ParDataPar; 
-
-        static readonly string asciiCharsType1 = " .:-=+*#%@";
-        static readonly string asciiCharsType2 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
-        static string selectedCharset;
-        static string selection = "";
-        static string project = "";
-
-        static readonly Stopwatch sw = new Stopwatch();
+        private static TimeSpan timeGif_SeqP_ParA;
+        private static TimeSpan timeGif_ParP_ParA;
+        private static TimeSpan timeGif_ParP_ParDataPar;
+        private readonly static Stopwatch sw = new Stopwatch();
 
         [STAThread]
         static void Main(string[] args)
@@ -156,7 +144,7 @@ namespace SZPA
 
         #region ____________________Parallel Approach____________________
         #region ____________________ParSimple____________________
-        private static string ParallelSimple(string filepath)
+        private static string ParallelSimpleParFor(string filepath)
         {
             Bitmap image = new Bitmap(filepath);
             int width = image.Width;
@@ -205,7 +193,7 @@ namespace SZPA
         #endregion
 
         #region ____________________ParDataParallel____________________
-        private static string ParDataParallel(string filepath)
+        private static string ParDataPar(string filepath)
         {
             int cpuCount = Environment.ProcessorCount;
             Bitmap image = new Bitmap(filepath);
@@ -301,29 +289,29 @@ namespace SZPA
             #endregion
 
             #region ---------------------------Setup_ParallelSimple()---------------------------
-            Console.WriteLine("---------------------------ParallelSimple()---------------------------");
+            Console.WriteLine("---------------------------ParallelSimpleParFor()---------------------------");
             Thread.Sleep(1000);
             asciiImage = String.Empty;
             sw.Reset();
             sw.Start();
-            asciiImage = ParallelSimple(filepath);
+            asciiImage = ParallelSimpleParFor(filepath);
             sw.Stop();
             timeImage_ParallelSimple = sw.Elapsed;
             asciiImage = AddNewLineToImages(asciiImage);
-            WriteAsciiArtToFile("ParallelSimple");
+            WriteAsciiArtToFile("ParallelSimpleParFor");
             #endregion
 
             #region ---------------------------Setup_ParDataParallel()---------------------------
-            Console.WriteLine("---------------------------ParDataParallel---------------------------");
+            Console.WriteLine("---------------------------ParDataPar---------------------------");
             Thread.Sleep(1000);
             asciiImage = String.Empty; 
             sw.Reset();
             sw.Start();
-            asciiImage = ParDataParallel(filepath);
+            asciiImage = ParDataPar(filepath);
             sw.Stop();
             timeImage_ParDataParallel = sw.Elapsed;
             asciiImage = AddNewLineToImages(asciiImage);
-            WriteAsciiArtToFile("ParDataParallel");
+            WriteAsciiArtToFile("ParDataPar");
             #endregion
 
             ImageResults(timeImage_SeqImage, timeImage_SeqImageOneFor, timeImage_ParallelSimple, timeImage_ParDataParallel);
@@ -335,14 +323,14 @@ namespace SZPA
             Console.WriteLine("Measured time of each approach...");
             Console.WriteLine("Sequential approach:");
             Console.SetCursorPosition(21, 2);
-            Console.WriteLine("First approach: {0} -> {1}ms", time_SeqImage, time_SeqImage.TotalSeconds);
+            Console.WriteLine("First approach: {0} -> {1}s", time_SeqImage, time_SeqImage.TotalSeconds);
             Console.SetCursorPosition(21, 3);
-            Console.WriteLine("Second approach: {0} -> {1}ms", time_SeqImageOneFor, time_SeqImageOneFor.TotalSeconds);
+            Console.WriteLine("Second approach: {0} -> {1}s", time_SeqImageOneFor, time_SeqImageOneFor.TotalSeconds);
             Console.WriteLine("Parallel approach:");
             Console.SetCursorPosition(21, 5);
-            Console.WriteLine("First approach: {0} -> {1}ms", time_ParallelSimple, time_ParallelSimple.TotalSeconds);
+            Console.WriteLine("First approach: {0} -> {1}s", time_ParallelSimple, time_ParallelSimple.TotalSeconds);
             Console.SetCursorPosition(21, 6);
-            Console.WriteLine("Second approach: {0} -> {1}ms", time_ParDataParallel, time_ParDataParallel.TotalSeconds);
+            Console.WriteLine("Second approach: {0} -> {1}s", time_ParDataParallel, time_ParDataParallel.TotalSeconds);
         }
 
         static void SelectCharacterSet()
@@ -573,6 +561,7 @@ namespace SZPA
         #region ---------------------------GifProcessAlgs---------------------------
         static void SeqAsciiGen_SeqA_TwoFor()
         {
+            Console.Clear();
             Console.WriteLine("Sequential AsciiGenerator with Sequential ImageProcess 2 for loops...");
             Thread.Sleep(2000);
 
@@ -674,7 +663,7 @@ namespace SZPA
 
             for (int i = 0; i < imgPaths.Length; i++)
             {
-                string asciiImage = ParallelSimple(imgPaths[i]);
+                string asciiImage = ParallelSimpleParFor(imgPaths[i]);
                 gifSplitList.Add(asciiImage);
                 Console.WriteLine($"{i}. split from the list is ready...");
             }
@@ -704,7 +693,7 @@ namespace SZPA
             Parallel.For(0, imgPaths.Length, i =>
             {
                 int j = i;
-                string asciiImage = ParallelSimple(imgPaths[j]);
+                string asciiImage = ParallelSimpleParFor(imgPaths[j]);
 
                 gifSplitArray[j] = asciiImage;
                 Console.WriteLine($"{j}. split from the list is ready...");
@@ -735,7 +724,7 @@ namespace SZPA
             Parallel.For(0, imgPaths.Length, i =>
             {
                 int j = i;
-                string asciiImage = ParDataParallel(imgPaths[j]);
+                string asciiImage = ParDataPar(imgPaths[j]);
 
                 gifSplitArray[j] = asciiImage;
                 Console.WriteLine($"{j}. split from the list is ready...");
