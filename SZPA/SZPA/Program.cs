@@ -15,7 +15,8 @@ namespace SZPA
 {
     internal class Program
     {
-        private static string gifSplitImages = "GifSplitImages";
+        #region ---------------------------Variables etc.---------------------------
+        private static string ConvertedGifSplitImages = "ConvertedConvertedGifSplitImages";
         private static readonly string asciiCharsType1 = " .:-=+*#%@";
         private static readonly string asciiCharsType2 = "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/|()1{}[]?-_+~<>i!lI;:,\"^`'. ";
         private static string selection;
@@ -37,6 +38,7 @@ namespace SZPA
         private static TimeSpan timeGif_ParP_ParA;
         private static TimeSpan timeGif_ParP_ParDataPar;
         private readonly static Stopwatch sw = new Stopwatch();
+        #endregion
 
         [STAThread]
         static void Main(string[] args)
@@ -45,7 +47,7 @@ namespace SZPA
             Console.ReadLine();
         }
 
-        #region ---------------------------AsciiImage---------------------------
+        #region ---------------------------AsciiArt---------------------------
         #region ____________________Sequentional Approach____________________
         #region ____________________SeqImage____________________
         static string SeqImage(string filepath)
@@ -80,7 +82,7 @@ namespace SZPA
                     byte g = pixels[index + 1];
                     byte r = pixels[index + 2];
 
-                    double grayScale = (r * 0.3) + (g * 0.59) + (b * 0.11);
+                    double grayScale = (r * 0.299) + (g * 0.587) + (b * 0.114);
 
                     asciiImage += GetSpecificCharacterForEachPixel(grayScale, selectedCharset);
                 }
@@ -125,7 +127,7 @@ namespace SZPA
                 byte g = pixels[j + 1];
                 byte r = pixels[j + 2];
 
-                double grayScale = (r * 0.3) + (g * 0.59) + (b * 0.11);
+                double grayScale = (r * 0.299) + (g * 0.587) + (b * 0.114);
 
                 asciiImage += GetSpecificCharacterForEachPixel(grayScale, selectedCharset);
 
@@ -180,7 +182,7 @@ namespace SZPA
                 byte g = pixels[index + 1];
                 byte r = pixels[index + 2];
 
-                double grayScale = (r * 0.3) + (g * 0.59) + (b * 0.11);
+                double grayScale = (r * 0.299) + (g * 0.587) + (b * 0.114);
 
                 charPixels[i] = GetSpecificCharacterForEachPixel(grayScale, selectedCharset);
             });
@@ -211,20 +213,21 @@ namespace SZPA
             int step = depth / 8;
 
             byte[] pixels = new byte[(pixelCount * step)];
-            int partialArrayCount = pixels.Length / cpuCount;
+            int fractionalArrayCount = pixels.Length / cpuCount;
             IntPtr iptr = bitmapData.Scan0;
             string[] asciiImage = new string[cpuCount];
             
             // Copy data from pointer to array
             Marshal.Copy(iptr, pixels, 0, pixels.Length);
+
             Task[] tasks = new Task[cpuCount];
 
             for (int i = 0; i < cpuCount; i++)
             {
                 int j = i;
-                byte[] partialArray = pixels.Skip(j * partialArrayCount).Take(partialArrayCount).ToArray();
+                byte[] fractionalArray = pixels.Skip(j * fractionalArrayCount).Take(fractionalArrayCount).ToArray();
 
-                Task t = new Task(() => asciiImage[j] = CalcCharacters(partialArray, width));
+                Task t = new Task(() => asciiImage[j] = CalcCharacters(fractionalArray, width));
                 t.Start();
                 tasks[j] = t;
             }
@@ -238,18 +241,18 @@ namespace SZPA
         #endregion
 
         #region ---------------------------Setup/SideQuests---------------------------
-        private static string CalcCharacters(byte[] partialArray, int width)
+        private static string CalcCharacters(byte[] fractionalArray, int width)
         {
             string partialAsciiImage = "";
             int rowCount = 0;
 
-            for (int j = 0; j < partialArray.Length - 3; j += 3)
+            for (int j = 0; j < fractionalArray.Length - 3; j += 3)
             {
-                byte b = partialArray[j];
-                byte g = partialArray[j + 1];
-                byte r = partialArray[j + 2];
+                byte b = fractionalArray[j];
+                byte g = fractionalArray[j + 1];
+                byte r = fractionalArray[j + 2];
 
-                double grayScale = (r * 0.3) + (g * 0.59) + (b * 0.11);
+                double grayScale = (r * 0.299) + (g * 0.587) + (b * 0.114);
 
                 partialAsciiImage += GetSpecificCharacterForEachPixel(grayScale, selectedCharset);
 
@@ -379,7 +382,7 @@ namespace SZPA
             else
             {
                 Console.Clear();
-                Console.WriteLine("Wrong answer, select a correct answer...");
+                Console.WriteLine("Choose wiser...");
                 Setup();
             }
             
@@ -524,16 +527,16 @@ namespace SZPA
         static void SeqCreateImagesFromGif(string gifPath)
         {
             Console.WriteLine("Generating jpgs from gif...");
-            bool exists = Directory.Exists(gifSplitImages);
+            bool exists = Directory.Exists(ConvertedGifSplitImages);
 
             if (!exists)
             {
-                Directory.CreateDirectory(gifSplitImages);
+                Directory.CreateDirectory(ConvertedGifSplitImages);
             }
             else
             {
-                Directory.Delete(gifSplitImages, true);
-                Directory.CreateDirectory(gifSplitImages);
+                Directory.Delete(ConvertedGifSplitImages, true);
+                Directory.CreateDirectory(ConvertedGifSplitImages);
             }
 
             Image gifImg = Image.FromFile(gifPath);
@@ -552,8 +555,8 @@ namespace SZPA
                 gifImg.SelectActiveFrame(dimension, i);
                 frames[i] = ((Image)gifImg.Clone());
 
-                Console.WriteLine(gifSplitImages + "/" + nameSplitHelper[0] + $"_{i}.jpg");
-                frames[i].Save(gifSplitImages + "/" + nameSplitHelper[0] + $"_{i}.jpg", ImageFormat.Jpeg);
+                Console.WriteLine(ConvertedGifSplitImages + "/" + nameSplitHelper[0] + $"_{i}.jpg");
+                frames[i].Save(ConvertedGifSplitImages + "/" + nameSplitHelper[0] + $"_{i}.jpg", ImageFormat.Jpeg);
             }
         }
         #endregion
@@ -562,10 +565,11 @@ namespace SZPA
         static void SeqAsciiGen_SeqA_TwoFor()
         {
             Console.Clear();
+            Console.WriteLine("SeqAsciiGen_SeqA_TwoFor");
             Console.WriteLine("Sequential AsciiGenerator with Sequential ImageProcess 2 for loops...");
             Thread.Sleep(2000);
 
-            string[] imgPaths = Directory.GetFiles(gifSplitImages, "*.jpg",
+            string[] imgPaths = Directory.GetFiles(ConvertedGifSplitImages, "*.jpg",
                 SearchOption.TopDirectoryOnly);
 
             gifSplitList.Clear();
@@ -579,7 +583,7 @@ namespace SZPA
             {
                 string asciiImage = SeqImage(imgPaths[i]);
                 gifSplitList.Add(asciiImage);
-                Console.WriteLine($"{i}. split from the list is ready...");
+                Console.WriteLine($"{imgPaths.Length}/{i}. split is ready...");
             }
 
             sw.Stop();
@@ -589,10 +593,11 @@ namespace SZPA
         static void SeqAsciiGen_SeqA_OneFor()
         {
             Console.Clear();
+            Console.WriteLine("SeqAsciiGen_SeqA_OneFor");
             Console.WriteLine("Sequential AsciiGenerator with Sequential ImageProcess 1 for loop...");
             Thread.Sleep(2000);
 
-            string[] imgPaths = Directory.GetFiles(gifSplitImages, "*.jpg",
+            string[] imgPaths = Directory.GetFiles(ConvertedGifSplitImages, "*.jpg",
                 SearchOption.TopDirectoryOnly);
 
             gifSplitList.Clear();
@@ -607,8 +612,8 @@ namespace SZPA
             {
                 string asciiImage = SeqImageOneFor(imgPaths[i]);
                 gifSplitList.Add(asciiImage);
-                //UpdateCurrentLine($"{i}. ascii img is done");
-                Console.WriteLine($"{i}. split from the list is ready...");
+                //UpdateCurrentLine($"{imgPaths.Length}/{i}. ascii img is done");
+                Console.WriteLine($"{imgPaths.Length}/{i}. split is ready...");
             }
 
             sw.Stop();
@@ -618,10 +623,11 @@ namespace SZPA
         static void ParAsciiGen_SeqA()
         {
             Console.Clear();
+            Console.WriteLine("ParAsciiGen_SeqA");
             Console.WriteLine("Parallel AsciiGenerator with Sequential ImageProcess 1 for loop...");
             Thread.Sleep(2000);
 
-            string[] imgPaths = Directory.GetFiles(gifSplitImages, "*.jpg",
+            string[] imgPaths = Directory.GetFiles(ConvertedGifSplitImages, "*.jpg",
                 SearchOption.TopDirectoryOnly);
 
             Console.WriteLine($"Gif split list contains {imgPaths.Length} images \n");
@@ -637,7 +643,7 @@ namespace SZPA
                 string asciiImage = SeqImageOneFor(imgPaths[j]);
 
                 gifSplitArray[j] = asciiImage;
-                Console.WriteLine($"{j}. split from the list is ready...");
+                Console.WriteLine($"{imgPaths.Length}/{j}. split is ready...");
             });
 
             sw.Stop();
@@ -647,10 +653,11 @@ namespace SZPA
         static void SeqAsciiGen_ParA()
         {
             Console.Clear();
+            Console.WriteLine("SeqAsciiGen_ParA");
             Console.WriteLine("Sequential AsciiGenerator with Parallel ImageProcess...");
             Thread.Sleep(2000);
 
-            string[] imgPaths = Directory.GetFiles(gifSplitImages, "*.jpg",
+            string[] imgPaths = Directory.GetFiles(ConvertedGifSplitImages, "*.jpg",
                 SearchOption.TopDirectoryOnly);
 
             gifSplitList.Clear();
@@ -665,7 +672,7 @@ namespace SZPA
             {
                 string asciiImage = ParallelSimpleParFor(imgPaths[i]);
                 gifSplitList.Add(asciiImage);
-                Console.WriteLine($"{i}. split from the list is ready...");
+                Console.WriteLine($"{imgPaths.Length}/{i}. split is ready...");
             }
 
             sw.Stop();
@@ -677,10 +684,11 @@ namespace SZPA
         static void ParAsciiGen_ParA()
         {
             Console.Clear();
+            Console.WriteLine("ParAsciiGen_ParA");
             Console.WriteLine("Parallel AsciiGenerator with parallel ImageProcess 1 for loop...");
             Thread.Sleep(2000);
 
-            string[] imgPaths = Directory.GetFiles(gifSplitImages, "*.jpg",
+            string[] imgPaths = Directory.GetFiles(ConvertedGifSplitImages, "*.jpg",
                 SearchOption.TopDirectoryOnly);
 
             Console.WriteLine($"Gif split list contains {imgPaths.Length} images \n");
@@ -696,7 +704,7 @@ namespace SZPA
                 string asciiImage = ParallelSimpleParFor(imgPaths[j]);
 
                 gifSplitArray[j] = asciiImage;
-                Console.WriteLine($"{j}. split from the list is ready...");
+                Console.WriteLine($"{imgPaths.Length}/{j}. split is ready...");
             });
 
             sw.Stop();
@@ -708,10 +716,11 @@ namespace SZPA
         static void ParAsciiGen_ParDataPar()
         {
             Console.Clear();
+            Console.WriteLine("ParAsciiGen_ParDataPar");
             Console.WriteLine("Parallel AsciiGenerator with DATA parallel ImageProcess 1 for loop...");
             Thread.Sleep(2000);
 
-            string[] imgPaths = Directory.GetFiles(gifSplitImages, "*.jpg",
+            string[] imgPaths = Directory.GetFiles(ConvertedGifSplitImages, "*.jpg",
                 SearchOption.TopDirectoryOnly);
 
             Console.WriteLine($"Gif split list contains {imgPaths.Length} images \n");
@@ -727,7 +736,7 @@ namespace SZPA
                 string asciiImage = ParDataPar(imgPaths[j]);
 
                 gifSplitArray[j] = asciiImage;
-                Console.WriteLine($"{j}. split from the list is ready...");
+                Console.WriteLine($"{imgPaths.Length}/{j}. split is ready...");
             });
 
             sw.Stop();
