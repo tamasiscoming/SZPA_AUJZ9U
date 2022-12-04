@@ -259,7 +259,6 @@ namespace SZPA
                 if (j % width == 0)
                 {
                     rowCount++;
-                    //partialAsciiImage += "\n";
                 }
             }
             return partialAsciiImage;
@@ -454,20 +453,21 @@ namespace SZPA
         static void DisplayElapsedTimes()
         {
             Console.Clear();
-            Console.WriteLine(
-                $"Sequential process, sequential algorithm 2 for loops: {timeGif_SeqP_SeqA_TwoFor}");
-            Console.WriteLine(
-                $"Sequential process, sequential algorithm 1 for loops: {timeGif_SeqP_SeqA_OneFor}");
-            Console.WriteLine(
-                $"Parallel process, sequential algorithm 1 for loops: {timeGif_ParP_SeqA}");
-            Console.WriteLine($"Sequential process, parallel algorithm: {timeGif_SeqP_ParA}");
-            Console.WriteLine($"Parallel process, parallel algorithm: {timeGif_ParP_ParA}");
-            Console.WriteLine($"Parallel process, DATA parallel algorithm: {timeGif_ParP_ParDataPar}");
+
+            Console.WriteLine($"Selected file: {path.Split('\\')[path.Split('\\').Length - 1].Split('.')[0]}.gif");
+            Console.WriteLine($"Selected Ascii characterset: {selectedCharset}");
+            Console.WriteLine("Algorithm");                 Console.SetCursorPosition(29, 2);   Console.Write(" | Runtime");                                            Console.SetCursorPosition(45, 2);   Console.Write(" | Differencial");                                                                                                                   Console.SetCursorPosition(66, 2); Console.Write(" | Acceleration rate");                                                                                                                                        Console.SetCursorPosition(0, 3);
+            Console.WriteLine("SeqAsciiGen_SeqA_OneFor");   Console.SetCursorPosition(29, 3);   Console.Write($" | {timeGif_SeqP_SeqA_OneFor.TotalMilliseconds}ms");    Console.SetCursorPosition(45, 3);   Console.Write($" | {Convert.ToDouble(timeGif_SeqP_SeqA_OneFor.TotalMilliseconds) - Convert.ToDouble(timeGif_SeqP_SeqA_OneFor.TotalMilliseconds)}"); Console.SetCursorPosition(66, 3); Console.Write($" | {Math.Round((Convert.ToDouble(timeGif_SeqP_SeqA_OneFor.TotalMilliseconds) / Convert.ToDouble(timeGif_SeqP_SeqA_OneFor.TotalMilliseconds)) * 100, 2)}%");   Console.SetCursorPosition(0, 4);
+            Console.WriteLine("SeqAsciiGen_SeqA_TwoFor");   Console.SetCursorPosition(29, 4);   Console.Write($" | {timeGif_SeqP_SeqA_TwoFor.TotalMilliseconds}ms");    Console.SetCursorPosition(45, 4);   Console.Write($" | {Convert.ToDouble(timeGif_SeqP_SeqA_TwoFor.TotalMilliseconds) - Convert.ToDouble(timeGif_SeqP_SeqA_OneFor.TotalMilliseconds)}"); Console.SetCursorPosition(66, 4); Console.Write($" | {Math.Round((Convert.ToDouble(timeGif_SeqP_SeqA_OneFor.TotalMilliseconds) / Convert.ToDouble(timeGif_SeqP_SeqA_TwoFor.TotalMilliseconds)) * 100, 2)}%");   Console.SetCursorPosition(0, 5);
+            Console.WriteLine("ParAsciiGen_SeqA");          Console.SetCursorPosition(29, 5);   Console.Write($" | {timeGif_ParP_SeqA.TotalMilliseconds}ms");           Console.SetCursorPosition(45, 5);   Console.Write($" | {Convert.ToDouble(timeGif_ParP_SeqA.TotalMilliseconds) - Convert.ToDouble(timeGif_SeqP_SeqA_OneFor.TotalMilliseconds)}");        Console.SetCursorPosition(66, 5); Console.Write($" | {Math.Round((Convert.ToDouble(timeGif_SeqP_SeqA_OneFor.TotalMilliseconds) / Convert.ToDouble(timeGif_ParP_SeqA.TotalMilliseconds)) * 100, 2)}%");          Console.SetCursorPosition(0, 6);
+            Console.WriteLine("SeqAsciiGen_ParA");          Console.SetCursorPosition(29, 6);   Console.Write($" | {timeGif_SeqP_ParA.TotalMilliseconds}ms");           Console.SetCursorPosition(45, 6);   Console.Write($" | {Convert.ToDouble(timeGif_SeqP_ParA.TotalMilliseconds) - Convert.ToDouble(timeGif_SeqP_SeqA_OneFor.TotalMilliseconds)}");        Console.SetCursorPosition(66, 6); Console.Write($" | {Math.Round((Convert.ToDouble(timeGif_SeqP_SeqA_OneFor.TotalMilliseconds) / Convert.ToDouble(timeGif_SeqP_ParA.TotalMilliseconds)) * 100, 2)}%");          Console.SetCursorPosition(0, 7);
+            Console.WriteLine("ParAsciiGen_ParA");          Console.SetCursorPosition(29, 7);   Console.Write($" | {timeGif_ParP_ParA.TotalMilliseconds}ms");           Console.SetCursorPosition(45, 7);   Console.Write($" | {Convert.ToDouble(timeGif_ParP_ParA.TotalMilliseconds) - Convert.ToDouble(timeGif_SeqP_SeqA_OneFor.TotalMilliseconds)}");        Console.SetCursorPosition(66, 7); Console.Write($" | {Math.Round((Convert.ToDouble(timeGif_SeqP_SeqA_OneFor.TotalMilliseconds) / Convert.ToDouble(timeGif_ParP_ParA.TotalMilliseconds)) * 100, 2)}%");          Console.SetCursorPosition(0, 8);
+            Console.WriteLine("ParAsciiGen_ParDataPar");    Console.SetCursorPosition(29, 8);   Console.Write($" | {timeGif_ParP_ParDataPar.TotalMilliseconds}ms");     Console.SetCursorPosition(45, 8);   Console.Write($" | {Convert.ToDouble(timeGif_ParP_ParDataPar.TotalMilliseconds) - Convert.ToDouble(timeGif_SeqP_SeqA_OneFor.TotalMilliseconds)}");  Console.SetCursorPosition(66, 8); Console.Write($" | {Math.Round((Convert.ToDouble(timeGif_SeqP_SeqA_OneFor.TotalMilliseconds) / Convert.ToDouble(timeGif_ParP_ParDataPar.TotalMilliseconds)), 2) * 100}%");    Console.SetCursorPosition(0, 10);
         }
 
         static void DisplayGifToConsoleFromArray()
         {
-            Console.WriteLine("Press any key to display the animation...");
+            Console.WriteLine("Press any key to play the animation...");
             Console.ReadKey();
             foreach (string asciiFrame in gifSplitArray)
             {
@@ -566,7 +566,7 @@ namespace SZPA
         {
             Console.Clear();
             Console.WriteLine("SeqAsciiGen_SeqA_TwoFor");
-            Console.WriteLine("Sequential AsciiGenerator with Sequential ImageProcess 2 for loops...");
+            Console.WriteLine("Sequentional Process, Sequentional Algorithm (Two loops)...");
             Thread.Sleep(2000);
 
             string[] imgPaths = Directory.GetFiles(ConvertedGifSplitImages, "*.jpg",
@@ -594,7 +594,7 @@ namespace SZPA
         {
             Console.Clear();
             Console.WriteLine("SeqAsciiGen_SeqA_OneFor");
-            Console.WriteLine("Sequential AsciiGenerator with Sequential ImageProcess 1 for loop...");
+            Console.WriteLine("Sequentional Process, Sequentional Algorithm (One loop)...");
             Thread.Sleep(2000);
 
             string[] imgPaths = Directory.GetFiles(ConvertedGifSplitImages, "*.jpg",
@@ -624,7 +624,7 @@ namespace SZPA
         {
             Console.Clear();
             Console.WriteLine("ParAsciiGen_SeqA");
-            Console.WriteLine("Parallel AsciiGenerator with Sequential ImageProcess 1 for loop...");
+            Console.WriteLine("Parallel Process, Sequentional Algorithm...");
             Thread.Sleep(2000);
 
             string[] imgPaths = Directory.GetFiles(ConvertedGifSplitImages, "*.jpg",
@@ -654,7 +654,7 @@ namespace SZPA
         {
             Console.Clear();
             Console.WriteLine("SeqAsciiGen_ParA");
-            Console.WriteLine("Sequential AsciiGenerator with Parallel ImageProcess...");
+            Console.WriteLine("Sequentional Process, Parallel Algorithm...");
             Thread.Sleep(2000);
 
             string[] imgPaths = Directory.GetFiles(ConvertedGifSplitImages, "*.jpg",
@@ -685,7 +685,7 @@ namespace SZPA
         {
             Console.Clear();
             Console.WriteLine("ParAsciiGen_ParA");
-            Console.WriteLine("Parallel AsciiGenerator with parallel ImageProcess 1 for loop...");
+            Console.WriteLine("Parallel Process, Parallel Algorithm...");
             Thread.Sleep(2000);
 
             string[] imgPaths = Directory.GetFiles(ConvertedGifSplitImages, "*.jpg",
@@ -717,7 +717,7 @@ namespace SZPA
         {
             Console.Clear();
             Console.WriteLine("ParAsciiGen_ParDataPar");
-            Console.WriteLine("Parallel AsciiGenerator with DATA parallel ImageProcess 1 for loop...");
+            Console.WriteLine("Parallel Process, Data Parallelism...");
             Thread.Sleep(2000);
 
             string[] imgPaths = Directory.GetFiles(ConvertedGifSplitImages, "*.jpg",
